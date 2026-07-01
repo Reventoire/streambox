@@ -51,7 +51,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     shareCrashReports: false,
   },
   metadata: {
-    primaryProvider: "tmdb",
+    primaryProvider: "mock.metadata",
     language: "en-US",
   },
   debridProviders: [],

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { mockMediaService } from "../services/mock/mockMediaService";
+import { providerMediaService } from "../services/providers/providerMediaService";
+import { isMediaType } from "../types/media";
 
 export const mediaKeys = {
   all: ["media"] as const,
@@ -14,43 +15,45 @@ export const mediaKeys = {
 export function useTrendingMovies() {
   return useQuery({
     queryKey: mediaKeys.trendingMovies(),
-    queryFn: mockMediaService.getTrendingMovies,
+    queryFn: providerMediaService.getTrendingMovies,
   });
 }
 
 export function usePopularSeries() {
   return useQuery({
     queryKey: mediaKeys.popularSeries(),
-    queryFn: mockMediaService.getPopularSeries,
+    queryFn: providerMediaService.getPopularSeries,
   });
 }
 
 export function useContinueWatching() {
   return useQuery({
     queryKey: mediaKeys.continueWatching(),
-    queryFn: mockMediaService.getContinueWatching,
+    queryFn: providerMediaService.getContinueWatching,
   });
 }
 
 export function useRecentlyAdded() {
   return useQuery({
     queryKey: mediaKeys.recentlyAdded(),
-    queryFn: mockMediaService.getRecentlyAdded,
+    queryFn: providerMediaService.getRecentlyAdded,
   });
 }
 
 export function useSearchMedia(query: string) {
   return useQuery({
     queryKey: mediaKeys.search(query),
-    queryFn: () => mockMediaService.searchMedia(query),
-    enabled: query.length > 0,
+    queryFn: () => providerMediaService.searchMedia(query),
+    enabled: query.trim().length > 0,
   });
 }
 
 export function useMediaDetails(type: string, id: string) {
+  const mediaType = isMediaType(type) ? type : undefined;
+
   return useQuery({
     queryKey: mediaKeys.details(type, id),
-    queryFn: () => mockMediaService.getMediaDetails(type, id),
-    enabled: !!type && !!id,
+    queryFn: () => providerMediaService.getMediaDetails(mediaType!, id),
+    enabled: !!mediaType && !!id,
   });
 }

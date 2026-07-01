@@ -61,6 +61,20 @@ This document tracks the status of all planned features.
 
 ---
 
+## Phase 2C: Provider Abstractions with Mock Providers
+
+| Feature | Status | Notes |
+|---|---|---|
+| Provider domain types | Partial | ProviderId, ProviderType, ProviderStatus, capabilities, health, config, manifest |
+| Provider interfaces | Partial | BaseProvider, Metadata, Catalog, Stream, Debrid, Stremio-compatible addon |
+| Provider registry | Partial | Register, unregister, list, lookup by type/capability |
+| Mock providers | Partial | Local-only metadata, catalog, stream, Debrid, and Stremio addon providers |
+| Provider health checks | Partial | Mock providers report healthy status |
+| Settings provider cards | Partial | Mock cards show type, status, capabilities, and placeholder config state |
+| Real provider credentials | Planned | Not accepted or stored yet |
+
+---
+
 ## Phase 3: Real Provider Integration (Planned)
 
 | Feature | Status | Notes |

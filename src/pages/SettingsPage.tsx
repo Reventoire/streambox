@@ -5,6 +5,11 @@ import Toggle from "../components/settings/Toggle";
 import Select, { SelectOption } from "../components/settings/Select";
 import ProviderCard from "../components/settings/ProviderCard";
 import PageHeader from "../components/shared/PageHeader";
+import {
+  getProviderSummariesByType,
+  useProviderSummaries,
+  type ProviderSummary,
+} from "../hooks/useProviderQueries";
 import { useSettingsStore } from "../stores/useSettingsStore";
 import "./SettingsPage.css";
 
@@ -24,12 +29,40 @@ const LANGUAGE_OPTIONS: SelectOption[] = [
 ];
 
 const METADATA_PROVIDER_OPTIONS: SelectOption[] = [
-  { value: "tmdb", label: "TMDB (The Movie Database)" },
-  { value: "imdb", label: "IMDB" },
+  { value: "mock.metadata", label: "Mock Metadata Provider" },
 ];
+
+function renderMockProviderCard(summary: ProviderSummary) {
+  const { provider, health } = summary;
+
+  return (
+    <ProviderCard
+      key={provider.id}
+      name={provider.manifest.name}
+      description={provider.manifest.description}
+      enabled={provider.config.enabled}
+      typeLabel={provider.type}
+      status={health.status}
+      capabilities={provider.capabilities}
+      configurationState={provider.config.configurationState}
+      healthMessage={health.message}
+      version={provider.manifest.version}
+      readOnly
+    />
+  );
+}
 
 export default function SettingsPage() {
   const { settings, updateSettings, resetSettings, isLoading } = useSettingsStore();
+  const { data: providerSummaries } = useProviderSummaries();
+
+  const metadataProviderCards = [
+    ...getProviderSummariesByType(providerSummaries, "metadata"),
+    ...getProviderSummariesByType(providerSummaries, "catalog"),
+  ];
+  const streamProviderCards = getProviderSummariesByType(providerSummaries, "stream");
+  const stremioProviderCards = getProviderSummariesByType(providerSummaries, "stremio-addon");
+  const debridProviderCards = getProviderSummariesByType(providerSummaries, "debrid");
 
   if (isLoading) {
     return (
@@ -150,8 +183,8 @@ export default function SettingsPage() {
 
       {/* Metadata Providers */}
       <SettingsSection
-        title="Metadata Providers"
-        description="Configure which service provides media metadata, posters, and descriptions."
+        title="Metadata and Catalog Providers"
+        description="Configure provider-neutral metadata and catalog sources. Mock providers are local-only."
       >
         <SettingsRow
           label="Primary Metadata Provider"
@@ -166,15 +199,31 @@ export default function SettingsPage() {
             />
           }
         />
+        <div className="settings-provider-list">
+          {metadataProviderCards.map(renderMockProviderCard)}
+        </div>
+      </SettingsSection>
+
+      {/* Stream Providers */}
+      <SettingsSection
+        title="Stream Providers"
+        description="Placeholder stream discovery providers. No real stream resolution or playback source integration is enabled."
+      >
+        <div className="settings-provider-list">
+          {streamProviderCards.map(renderMockProviderCard)}
+        </div>
       </SettingsSection>
 
       {/* Stremio Addons */}
       <SettingsSection
         title="Stremio Addons"
-        description="Add and manage Stremio-compatible addons for additional content sources."
+        description="Add and manage Stremio-compatible addons for additional content sources. Real addon manifests are not loaded yet."
       >
+        <div className="settings-provider-list">
+          {stremioProviderCards.map(renderMockProviderCard)}
+        </div>
         {settings.stremioAddons.length === 0 && (
-          <p className="settings-empty-hint">No addons configured. Add a Stremio addon using its manifest URL.</p>
+          <p className="settings-empty-hint">No user addons configured. Manifest URL loading is planned for a later milestone.</p>
         )}
         {settings.stremioAddons.map((addon) => (
           <ProviderCard
@@ -194,18 +243,21 @@ export default function SettingsPage() {
             }}
           />
         ))}
-        <button className="add-provider-btn">
-          <Plus size={18} /> Add Stremio Addon
+        <button className="add-provider-btn" disabled title="Real addon configuration is not enabled yet">
+          <Plus size={18} /> Add Stremio Addon Later
         </button>
       </SettingsSection>
 
       {/* Debrid Providers */}
       <SettingsSection
         title="Debrid Providers"
-        description="Connect a Debrid service to enable high-speed cached stream links."
+        description="Connect a Debrid service to enable high-speed cached stream links. Credential entry is intentionally disabled for now."
       >
+        <div className="settings-provider-list">
+          {debridProviderCards.map(renderMockProviderCard)}
+        </div>
         {settings.debridProviders.length === 0 && (
-          <p className="settings-empty-hint">No Debrid providers configured. Support for Real-Debrid, AllDebrid, and others is coming soon.</p>
+          <p className="settings-empty-hint">No user Debrid providers configured. Real provider credentials are not accepted yet.</p>
         )}
         {settings.debridProviders.map((provider) => (
           <ProviderCard
@@ -225,8 +277,8 @@ export default function SettingsPage() {
             }}
           />
         ))}
-        <button className="add-provider-btn">
-          <Plus size={18} /> Add Debrid Provider
+        <button className="add-provider-btn" disabled title="Real Debrid configuration is not enabled yet">
+          <Plus size={18} /> Add Debrid Provider Later
         </button>
       </SettingsSection>
     </div>

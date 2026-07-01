@@ -1,4 +1,4 @@
-import { MediaDetails, MediaItem } from "../../types/media";
+import { MediaDetails, MediaItem, MediaType } from "../../types/media";
 
 // Pre-define 12 mock media items for local discovery
 const MOCK_DATA: MediaDetails[] = [
@@ -202,7 +202,7 @@ export const mockMediaService = {
     );
   },
 
-  getMediaDetails: async (type: string, id: string): Promise<MediaDetails> => {
+  getMediaDetails: async (type: MediaType, id: string): Promise<MediaDetails> => {
     await delay(500);
     const media = MOCK_DATA.find(m => m.id === id && m.type === type);
     if (!media) {
