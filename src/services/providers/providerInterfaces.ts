@@ -3,6 +3,7 @@ import type {
   DebridAvailability,
   ProviderCapability,
   ProviderCatalog,
+  ProviderCatalogQuery,
   ProviderConfig,
   ProviderHealth,
   ProviderId,
@@ -36,7 +37,7 @@ export interface MetadataProvider extends BaseProvider {
 export interface CatalogProvider extends BaseProvider {
   readonly type: "catalog";
   listCatalogs(): Promise<ProviderCatalog[]>;
-  getCatalog(catalogId: string): Promise<MediaItem[]>;
+  getCatalog(catalogId: string, query?: ProviderCatalogQuery): Promise<MediaItem[]>;
 }
 
 export interface StreamProvider extends BaseProvider {
@@ -63,7 +64,8 @@ export interface DebridProvider extends BaseProvider {
 export interface StremioAddonProvider extends BaseProvider {
   readonly type: "stremio-addon";
   getManifest(): Promise<ProviderManifest>;
-  getCatalog(catalogId: string): Promise<MediaItem[]>;
+  listCatalogs(): Promise<ProviderCatalog[]>;
+  getCatalog(catalogId: string, query?: ProviderCatalogQuery): Promise<MediaItem[]>;
   getStreams(request: StreamSearchRequest): Promise<ProviderStream[]>;
 }
 
@@ -73,4 +75,3 @@ export type AnyProvider =
   | StreamProvider
   | DebridProvider
   | StremioAddonProvider;
-

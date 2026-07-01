@@ -1,10 +1,16 @@
+import type { MediaItem } from "../../types/media";
+import { isMediaType } from "../../types/media";
 import type { ProviderCapability, ProviderManifest } from "../../types/providers";
 import type {
   StremioAddonCapability,
+  StremioAddonConfig,
   StremioAddonValidationError,
   StremioAddonValidationResult,
   StremioCatalogDefinition,
   StremioCatalogExtraDefinition,
+  StremioCatalogQuery,
+  StremioCatalogResponse,
+  StremioMetaPreview,
   StremioManifest,
   StremioResource,
 } from "../../types/stremio";
@@ -49,12 +55,18 @@ function validationResult(
   normalizedAddonUrl?: string,
   manifestUrl?: string,
   manifest?: StremioManifest,
+  catalogUrl?: string,
+  catalogResponse?: StremioCatalogResponse,
+  catalogItems?: MediaItem[],
 ): StremioAddonValidationResult {
   return {
     isValid: errors.length === 0,
     normalizedAddonUrl,
     manifestUrl,
+    catalogUrl,
     manifest,
+    catalogResponse,
+    catalogItems,
     errors,
   };
 }
@@ -160,6 +172,80 @@ function getResourceNames(manifest: StremioManifest): Set<string> {
   return new Set(manifest.resources.map((resource) => resource.name));
 }
 
+function getCatalogBaseUrl(addonUrl: string): StremioAddonValidationResult {
+  const normalized = normalizeAddonUrl(addonUrl);
+
+  if (!normalized.isValid || !normalized.normalizedAddonUrl) {
+    return normalized;
+  }
+
+  const parsedUrl = new URL(normalized.normalizedAddonUrl);
+
+  if (parsedUrl.pathname.endsWith(`/${MANIFEST_FILE_NAME}`)) {
+    parsedUrl.pathname = parsedUrl.pathname.slice(0, -`/${MANIFEST_FILE_NAME}`.length);
+  }
+
+  parsedUrl.pathname = parsedUrl.pathname.replace(/\/+$/, "");
+
+  return validationResult([], parsedUrl.toString().replace(/\/$/, ""));
+}
+
+function normalizeCatalogExtras(extras?: StremioCatalogQuery): string {
+  if (!extras) {
+    return "";
+  }
+
+  return Object.entries(extras)
+    .filter(([, value]) => value !== undefined && value !== "")
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+    .join("&");
+}
+
+function parseYear(value: string | undefined): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const match = value.match(/\d{4}/);
+  return match?.[0];
+}
+
+function parseRating(value: string | undefined): number | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const rating = Number.parseFloat(value);
+  return Number.isFinite(rating) ? rating : undefined;
+}
+
+function normalizeMetaPreview(value: unknown): StremioMetaPreview | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  if (
+    typeof value.id !== "string" ||
+    typeof value.type !== "string" ||
+    typeof value.name !== "string"
+  ) {
+    return null;
+  }
+
+  return {
+    id: value.id,
+    type: value.type,
+    name: value.name,
+    poster: typeof value.poster === "string" ? value.poster : undefined,
+    background: typeof value.background === "string" ? value.background : undefined,
+    logo: typeof value.logo === "string" ? value.logo : undefined,
+    description: typeof value.description === "string" ? value.description : undefined,
+    releaseInfo: typeof value.releaseInfo === "string" ? value.releaseInfo : undefined,
+    imdbRating: typeof value.imdbRating === "string" ? value.imdbRating : undefined,
+    genres: normalizeStringArray(value.genres),
+  };
+}
+
 export function normalizeAddonUrl(inputUrl: string): StremioAddonValidationResult {
   const trimmedUrl = inputUrl.trim();
 
@@ -200,6 +286,43 @@ export function normalizeAddonUrl(inputUrl: string): StremioAddonValidationResul
       },
     ]);
   }
+}
+
+export function buildCatalogUrl(
+  addonBaseUrl: string,
+  type: string,
+  catalogId: string,
+  extras?: StremioCatalogQuery,
+): StremioAddonValidationResult {
+  const catalogType = type.trim();
+  const normalizedCatalogId = catalogId.trim();
+  const errors: StremioAddonValidationError[] = [];
+
+  if (!catalogType) {
+    errors.push({ code: "missing-catalog-type", message: "Catalog type is required." });
+  }
+
+  if (!normalizedCatalogId) {
+    errors.push({ code: "missing-catalog-id", message: "Catalog id is required." });
+  }
+
+  const baseResult = getCatalogBaseUrl(addonBaseUrl);
+
+  if (!baseResult.isValid || !baseResult.normalizedAddonUrl) {
+    return validationResult([...baseResult.errors, ...errors]);
+  }
+
+  if (errors.length > 0) {
+    return validationResult(errors, baseResult.normalizedAddonUrl);
+  }
+
+  const extraSegment = normalizeCatalogExtras(extras);
+  const route = extraSegment
+    ? `catalog/${encodeURIComponent(catalogType)}/${encodeURIComponent(normalizedCatalogId)}/${extraSegment}.json`
+    : `catalog/${encodeURIComponent(catalogType)}/${encodeURIComponent(normalizedCatalogId)}.json`;
+  const catalogUrl = new URL(route, `${baseResult.normalizedAddonUrl}/`).toString();
+
+  return validationResult([], baseResult.normalizedAddonUrl, undefined, undefined, catalogUrl);
 }
 
 export function getManifestUrl(addonUrl: string): StremioAddonValidationResult {
@@ -317,6 +440,135 @@ export async function fetchAddonManifest(addonUrl: string): Promise<StremioManif
   return validation.manifest;
 }
 
+export function validateCatalogResponse(responseInput: unknown): StremioAddonValidationResult {
+  if (!isRecord(responseInput)) {
+    return validationResult([
+      {
+        code: "catalog-response-invalid",
+        message: "Catalog response must be a JSON object.",
+      },
+    ]);
+  }
+
+  if (!Array.isArray(responseInput.metas)) {
+    return validationResult([
+      {
+        code: "invalid-catalog-metas",
+        message: "Catalog response must include a metas array.",
+      },
+    ]);
+  }
+
+  const metas = responseInput.metas.flatMap((meta): StremioMetaPreview[] => {
+    const normalized = normalizeMetaPreview(meta);
+    return normalized ? [normalized] : [];
+  });
+
+  if (metas.length !== responseInput.metas.length) {
+    return validationResult([
+      {
+        code: "invalid-catalog-metas",
+        message: "Each catalog meta item must include id, type, and name.",
+      },
+    ]);
+  }
+
+  return validationResult([], undefined, undefined, undefined, undefined, { metas });
+}
+
+export function normalizeCatalogItems(response: StremioCatalogResponse): MediaItem[] {
+  return response.metas.flatMap((meta): MediaItem[] => {
+    if (!isMediaType(meta.type)) {
+      return [];
+    }
+
+    return [
+      {
+        id: meta.id,
+        type: meta.type,
+        title: meta.name,
+        year: parseYear(meta.releaseInfo),
+        posterUrl: meta.poster,
+        backdropUrl: meta.background,
+        description: meta.description,
+        rating: parseRating(meta.imdbRating),
+        genres: meta.genres?.map((genre) => ({
+          id: genre.toLowerCase().replace(/\s+/g, "-"),
+          name: genre,
+        })),
+      },
+    ];
+  });
+}
+
+export async function fetchCatalog(
+  addonConfig: StremioAddonConfig,
+  type: string,
+  catalogId: string,
+  extras?: StremioCatalogQuery,
+): Promise<StremioCatalogResponse> {
+  const supportsCatalog = addonConfig.manifest.catalogs.some(
+    (catalog) => catalog.type === type && catalog.id === catalogId,
+  );
+
+  if (!supportsCatalog) {
+    throw new StremioAddonServiceError(
+      "Addon manifest does not list this catalog.",
+      validationResult([
+        {
+          code: "catalog-not-supported",
+          message: "Addon manifest does not list this catalog.",
+        },
+      ]),
+    );
+  }
+
+  const catalogUrlResult = buildCatalogUrl(addonConfig.addonUrl, type, catalogId, extras);
+
+  if (!catalogUrlResult.isValid || !catalogUrlResult.catalogUrl) {
+    throw new StremioAddonServiceError("Catalog URL is not valid.", catalogUrlResult);
+  }
+
+  let catalogResponse: unknown;
+
+  try {
+    // TODO: Move catalog networking behind a Tauri command before adding
+    // stricter provider trust, redirect, CORS, and Android networking policy.
+    catalogResponse = await browserManifestTransport.fetchJson(catalogUrlResult.catalogUrl);
+  } catch (error) {
+    const message =
+      error instanceof Error && error.message ? error.message : "Could not fetch addon catalog.";
+
+    throw new StremioAddonServiceError(
+      message,
+      validationResult(
+        [{ code: "catalog-fetch-failed", message }],
+        catalogUrlResult.normalizedAddonUrl,
+        undefined,
+        undefined,
+        catalogUrlResult.catalogUrl,
+      ),
+    );
+  }
+
+  const validation = validateCatalogResponse(catalogResponse);
+
+  if (!validation.isValid || !validation.catalogResponse) {
+    throw new StremioAddonServiceError(
+      "Addon catalog response is not valid.",
+      validationResult(
+        validation.errors,
+        catalogUrlResult.normalizedAddonUrl,
+        undefined,
+        undefined,
+        catalogUrlResult.catalogUrl,
+      ),
+    );
+  }
+
+  return validation.catalogResponse;
+}
+
 export function getCapabilitiesFromManifest(
   manifest: StremioManifest,
 ): StremioAddonCapability[] {
@@ -348,8 +600,8 @@ export function convertManifestToProviderManifest(
   const resources = getResourceNames(manifest);
   const capabilities: ProviderCapability[] = ["stremio.manifest"];
 
-  // TODO: Later catalog requests will use manifest.catalogs once catalog
-  // request/response normalization is implemented.
+  // Catalog requests use manifest.catalogs and return normalized media items
+  // before UI receives them.
   if (resources.has("catalog")) {
     capabilities.push("stremio.catalog");
   }

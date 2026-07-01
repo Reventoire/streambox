@@ -1,4 +1,5 @@
 import type { ProviderManifest } from "./providers";
+import type { MediaItem } from "./media";
 
 export interface StremioResource {
   name: string;
@@ -38,6 +39,37 @@ export interface StremioManifest {
   idPrefixes?: string[];
 }
 
+export interface StremioCatalogExtra {
+  name: string;
+  value: string | number | boolean;
+}
+
+export type StremioCatalogQuery = Record<string, string | number | boolean | undefined>;
+
+export interface StremioCatalogRequest {
+  addonBaseUrl: string;
+  type: string;
+  catalogId: string;
+  extras?: StremioCatalogQuery;
+}
+
+export interface StremioMetaPreview {
+  id: string;
+  type: string;
+  name: string;
+  poster?: string;
+  background?: string;
+  logo?: string;
+  description?: string;
+  releaseInfo?: string;
+  imdbRating?: string;
+  genres?: string[];
+}
+
+export interface StremioCatalogResponse {
+  metas: StremioMetaPreview[];
+}
+
 export interface StremioAddonConfig {
   id: string;
   addonUrl: string;
@@ -58,7 +90,13 @@ export type StremioAddonValidationCode =
   | "invalid-manifest-types"
   | "invalid-manifest-catalogs"
   | "manifest-fetch-failed"
-  | "manifest-response-invalid";
+  | "manifest-response-invalid"
+  | "missing-catalog-type"
+  | "missing-catalog-id"
+  | "catalog-not-supported"
+  | "catalog-fetch-failed"
+  | "catalog-response-invalid"
+  | "invalid-catalog-metas";
 
 export interface StremioAddonValidationError {
   code: StremioAddonValidationCode;
@@ -69,7 +107,10 @@ export interface StremioAddonValidationResult {
   isValid: boolean;
   normalizedAddonUrl?: string;
   manifestUrl?: string;
+  catalogUrl?: string;
   manifest?: StremioManifest;
+  catalogResponse?: StremioCatalogResponse;
+  catalogItems?: MediaItem[];
   errors: StremioAddonValidationError[];
 }
 

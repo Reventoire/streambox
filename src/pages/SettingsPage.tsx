@@ -1,4 +1,5 @@
 import { RotateCcw, Plus } from "lucide-react";
+import { Link } from "react-router-dom";
 import SettingsSection from "../components/settings/SettingsSection";
 import SettingsRow from "../components/settings/SettingsRow";
 import Toggle from "../components/settings/Toggle";
@@ -258,12 +259,46 @@ export default function SettingsPage() {
       {/* Stremio Addons */}
       <SettingsSection
         title="Stremio Addons"
-        description="Fetch and save addon manifests only. Catalog, stream, torrent, Debrid, and playback integration remain disabled."
+        description="Fetch and save addon manifests, then browse manifest-listed catalogs. Streams, torrents, Debrid, and playback URL integration remain disabled."
       >
         <StremioAddonManifestForm onSave={handleSaveStremioAddon} />
         <div className="settings-provider-list">
           {stremioProviderCards.map(renderStremioProviderCard)}
         </div>
+        {settings.stremioAddons.length > 0 && (
+          <div className="settings-addon-catalog-preview">
+            <div className="settings-addon-catalog-preview-header">
+              <div>
+                <h3>Saved addon catalogs</h3>
+                <p>Catalog definitions are read from saved manifests and fetched only when browsed.</p>
+              </div>
+              <Link to="/addon-catalogs" className="settings-catalog-link">
+                Browse Catalogs
+              </Link>
+            </div>
+            <div className="settings-addon-catalog-list">
+              {settings.stremioAddons.map((addon) => (
+                <div className="settings-addon-catalog-item" key={addon.id}>
+                  <div>
+                    <strong>{addon.name}</strong>
+                    <span>{addon.enabled ? "Enabled" : "Disabled"}</span>
+                  </div>
+                  {addon.catalogs && addon.catalogs.length > 0 ? (
+                    <div className="settings-addon-catalog-pills">
+                      {addon.catalogs.map((catalog) => (
+                        <span key={`${addon.id}-${catalog.type}-${catalog.id}`}>
+                          {catalog.name ?? catalog.id} / {catalog.type}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p>No catalogs declared by this manifest.</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {settings.stremioAddons.length === 0 && (
           <p className="settings-empty-hint">No user addons saved yet. Fetch a manifest URL above to preview and save metadata locally.</p>
         )}

@@ -1,15 +1,22 @@
 import type { MediaItem } from "../../types/media";
+import { isMediaType } from "../../types/media";
 import type { ConfiguredStremioAddon } from "../../types/settings";
-import type { StremioManifest } from "../../types/stremio";
+import type { StremioAddonConfig, StremioCatalogDefinition, StremioManifest } from "../../types/stremio";
 import type {
   ProviderCapability,
+  ProviderCatalog,
+  ProviderCatalogQuery,
   ProviderConfig,
   ProviderHealth,
   ProviderManifest,
   ProviderStream,
   StreamSearchRequest,
 } from "../../types/providers";
-import { convertManifestToProviderManifest } from "../stremio/stremioAddonService";
+import {
+  convertManifestToProviderManifest,
+  fetchCatalog,
+  normalizeCatalogItems,
+} from "../stremio/stremioAddonService";
 import { createCapabilityUnavailableError, ProviderRuntimeError } from "./providerErrors";
 import type { StremioAddonProvider } from "./providerInterfaces";
 import { registerProvider, unregisterProvider } from "./providerRegistry";
@@ -39,15 +46,39 @@ function createProviderConfig(config: ConfiguredStremioAddon): ProviderConfig {
   };
 }
 
+function createCatalogKey(catalog: StremioCatalogDefinition): string {
+  return `${catalog.type}:${catalog.id}`;
+}
+
+function toProviderCatalog(catalog: StremioCatalogDefinition): ProviderCatalog | null {
+  if (!isMediaType(catalog.type)) {
+    return null;
+  }
+
+  return {
+    id: createCatalogKey(catalog),
+    sourceId: catalog.id,
+    sourceType: catalog.type,
+    name: catalog.name ?? catalog.id,
+    mediaTypes: [catalog.type],
+    extras: catalog.extra?.map((extra) => ({
+      ...extra,
+      isRequired: extra.isRequired ?? catalog.extraRequired?.includes(extra.name),
+    })),
+  };
+}
+
 export class ConfiguredStremioAddonProvider implements StremioAddonProvider {
   readonly type = "stremio-addon";
   readonly id: string;
   readonly manifest: ProviderManifest;
   readonly capabilities: ProviderCapability[];
   readonly config: ProviderConfig;
+  private readonly stremioManifest: StremioManifest;
 
   constructor(private readonly addonConfig: ConfiguredStremioAddon) {
     const stremioManifest = createManifestFromConfig(addonConfig);
+    this.stremioManifest = stremioManifest;
     this.manifest = convertManifestToProviderManifest(stremioManifest);
     this.id = this.manifest.id;
     this.capabilities = this.manifest.capabilities;
@@ -60,7 +91,7 @@ export class ConfiguredStremioAddonProvider implements StremioAddonProvider {
       status: this.addonConfig.enabled ? "healthy" : "disabled",
       checkedAt: new Date().toISOString(),
       message: this.addonConfig.enabled
-        ? "Manifest metadata is saved locally. Catalog and stream requests are not enabled yet."
+        ? "Manifest metadata is saved locally. Catalog browsing is available when the addon manifest supports catalogs. Stream requests remain disabled."
         : "Addon is saved locally but disabled.",
     };
   }
@@ -69,15 +100,45 @@ export class ConfiguredStremioAddonProvider implements StremioAddonProvider {
     return this.manifest;
   }
 
-  async getCatalog(_catalogId: string): Promise<MediaItem[]> {
-    // TODO: Later catalog requests will use saved manifest.catalogs after
-    // request validation and response normalization are implemented.
-    throw new ProviderRuntimeError(
-      createCapabilityUnavailableError(
-        this.id,
-        "Stremio catalog requests are planned but not enabled yet.",
-      ),
+  async listCatalogs(): Promise<ProviderCatalog[]> {
+    if (!this.capabilities.includes("stremio.catalog")) {
+      return [];
+    }
+
+    return this.stremioManifest.catalogs.flatMap((catalog): ProviderCatalog[] => {
+      const normalized = toProviderCatalog(catalog);
+      return normalized ? [normalized] : [];
+    });
+  }
+
+  async getCatalog(catalogId: string, query?: ProviderCatalogQuery): Promise<MediaItem[]> {
+    if (!this.addonConfig.enabled) {
+      throw new ProviderRuntimeError(
+        createCapabilityUnavailableError(this.id, "Stremio addon is disabled."),
+      );
+    }
+
+    const catalog = this.stremioManifest.catalogs.find(
+      (candidate) => createCatalogKey(candidate) === catalogId || candidate.id === catalogId,
     );
+
+    if (!catalog) {
+      throw new ProviderRuntimeError(
+        createCapabilityUnavailableError(this.id, `Stremio catalog "${catalogId}" is not listed by the manifest.`),
+      );
+    }
+
+    const addonConfig: StremioAddonConfig = {
+      id: this.addonConfig.id,
+      addonUrl: this.addonConfig.addonUrl,
+      manifestUrl: this.addonConfig.manifestUrl,
+      enabled: this.addonConfig.enabled,
+      manifest: this.stremioManifest,
+      providerManifest: this.manifest,
+    };
+
+    const response = await fetchCatalog(addonConfig, catalog.type, catalog.id, query);
+    return normalizeCatalogItems(response);
   }
 
   async getStreams(_request: StreamSearchRequest): Promise<ProviderStream[]> {

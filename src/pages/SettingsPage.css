@@ -40,6 +40,96 @@
   gap: 12px;
 }
 
+.settings-addon-catalog-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+}
+
+.settings-addon-catalog-preview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.settings-addon-catalog-preview-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.settings-addon-catalog-preview-header p,
+.settings-addon-catalog-item p {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.settings-catalog-link {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background-color: rgba(99, 102, 241, 0.12);
+  color: var(--accent-primary-hover);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.settings-addon-catalog-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-addon-catalog-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.settings-addon-catalog-item > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.settings-addon-catalog-item strong {
+  color: var(--text-primary);
+}
+
+.settings-addon-catalog-item span {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.settings-addon-catalog-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.settings-addon-catalog-pills span {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background-color: rgba(99, 102, 241, 0.1);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
 .stremio-manifest-form {
   display: flex;
   flex-direction: column;
@@ -225,5 +315,11 @@
   .stremio-manifest-input-row,
   .manifest-preview-grid {
     grid-template-columns: 1fr;
+  }
+
+  .settings-addon-catalog-preview-header,
+  .settings-addon-catalog-item > div:first-child {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

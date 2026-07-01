@@ -6,7 +6,8 @@ import {
   Heart, 
   History, 
   Settings,
-  MonitorPlay
+  MonitorPlay,
+  Compass
 } from "lucide-react";
 import { useAppStore } from "../../stores/useAppStore";
 import "./Sidebar.css";
@@ -30,6 +31,10 @@ export default function Sidebar() {
           <NavLink to="/search" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
             <Search size={22} className="nav-icon" />
             {isSidebarOpen && <span className="nav-label">Search</span>}
+          </NavLink>
+          <NavLink to="/addon-catalogs" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+            <Compass size={22} className="nav-icon" />
+            {isSidebarOpen && <span className="nav-label">Addons</span>}
           </NavLink>
         </div>
 

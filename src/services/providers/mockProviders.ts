@@ -3,6 +3,7 @@ import type {
   DebridAvailability,
   ProviderCapability,
   ProviderCatalog,
+  ProviderCatalogQuery,
   ProviderConfig,
   ProviderHealth,
   ProviderId,
@@ -157,7 +158,7 @@ export class MockCatalogProvider extends MockBaseProvider implements CatalogProv
     ];
   }
 
-  async getCatalog(catalogId: string): Promise<MediaItem[]> {
+  async getCatalog(catalogId: string, _query?: ProviderCatalogQuery): Promise<MediaItem[]> {
     switch (catalogId) {
       case "trending-movies":
         return mockMediaService.getTrendingMovies();
@@ -278,9 +279,13 @@ export class MockStremioAddonProvider
     return this.manifest;
   }
 
-  async getCatalog(catalogId: string): Promise<MediaItem[]> {
-    // TODO: Later catalog requests will use manifest catalog definitions after
-    // request validation and provider response normalization are implemented.
+  async listCatalogs(): Promise<ProviderCatalog[]> {
+    return [];
+  }
+
+  async getCatalog(catalogId: string, _query?: ProviderCatalogQuery): Promise<MediaItem[]> {
+    // Mock addon has no remote manifest catalogs. Configured user addons expose
+    // catalog browsing through ConfiguredStremioAddonProvider.
     throw new ProviderRuntimeError(
       createCapabilityUnavailableError(
         this.id,

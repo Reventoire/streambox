@@ -1,4 +1,5 @@
 import type { MediaItem, MediaType } from "./media";
+import type { StremioCatalogExtraDefinition, StremioCatalogQuery } from "./stremio";
 
 export type ProviderId = string;
 
@@ -86,6 +87,9 @@ export interface ProviderCatalog {
   name: string;
   description?: string;
   mediaTypes: MediaType[];
+  sourceType?: string;
+  sourceId?: string;
+  extras?: StremioCatalogExtraDefinition[];
 }
 
 export interface ProviderStream {
@@ -114,3 +118,5 @@ export interface StreamSearchRequest {
   media: MediaItem;
   episodeId?: string;
 }
+
+export type ProviderCatalogQuery = StremioCatalogQuery;

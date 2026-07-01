@@ -72,6 +72,7 @@ This document tracks the status of all planned features.
 | Provider health checks | Partial | Mock providers report healthy status |
 | Settings provider cards | Partial | Mock cards show type, status, capabilities, and placeholder config state |
 | Stremio addon manifest support | Partial | URL validation, manifest fetch, preview, local save, provider registration |
+| Stremio catalog support | Partial | Saved addon catalog listing, URL construction, response validation, normalized MediaGrid browsing |
 | Real provider credentials | Planned | Not accepted or stored yet |
 
 ---
@@ -80,8 +81,8 @@ This document tracks the status of all planned features.
 
 | Feature | Status | Notes |
 |---|---|---|
-| Stremio addon manifest loading | Partial | Manifest fetching only; no catalog, metadata, stream, torrent, or Debrid integration |
-| Stremio catalog browsing | Planned | |
+| Stremio addon manifest loading | Partial | Manifest fetching only; no metadata, stream, torrent, or Debrid integration |
+| Stremio catalog browsing | Partial | Catalog fetching from saved addons only; normalized preview results |
 | Stremio metadata support | Planned | |
 | Stremio stream fetching | Planned | |
 | Real-Debrid integration | Planned | |

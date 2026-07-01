@@ -9,6 +9,7 @@ import HistoryPage from "./pages/HistoryPage";
 import SettingsPage from "./pages/SettingsPage";
 import MediaDetailsPage from "./pages/MediaDetailsPage";
 import PlayerPage from "./pages/PlayerPage";
+import AddonCatalogsPage from "./pages/AddonCatalogsPage";
 import { useSettingsStore } from "./stores/useSettingsStore";
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
           <Route path="/library" element={<LibraryPage />} />
           <Route path="/favorites" element={<FavoritesPage />} />
           <Route path="/history" element={<HistoryPage />} />
+          <Route path="/addon-catalogs" element={<AddonCatalogsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/media/:type/:id" element={<MediaDetailsPage />} />
           <Route path="/player" element={<PlayerPage />} />
