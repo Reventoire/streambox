@@ -1,0 +1,36 @@
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  gap: 24px;
+  transition: border-color 0.2s ease;
+}
+
+.settings-row:hover {
+  border-color: var(--border-highlight);
+}
+
+.settings-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-row-label {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.settings-row-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.settings-row-control {
+  flex-shrink: 0;
+}

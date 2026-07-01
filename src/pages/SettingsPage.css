@@ -1,0 +1,58 @@
+.settings-page {
+  max-width: 800px;
+}
+
+.reset-settings-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.reset-settings-btn:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.settings-empty-hint {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  padding: 16px;
+  background-color: var(--bg-surface);
+  border: 1px dashed var(--border-color);
+  border-radius: 12px;
+  text-align: center;
+  margin: 0;
+}
+
+.add-provider-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background-color: var(--bg-surface);
+  color: var(--accent-primary-hover);
+  border: 1px dashed rgba(99, 102, 241, 0.4);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.add-provider-btn:hover {
+  background-color: rgba(99, 102, 241, 0.07);
+  border-color: rgba(99, 102, 241, 0.6);
+  color: var(--accent-primary);
+}

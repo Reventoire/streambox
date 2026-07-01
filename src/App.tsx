@@ -9,14 +9,26 @@ import HistoryPage from "./pages/HistoryPage";
 import SettingsPage from "./pages/SettingsPage";
 import MediaDetailsPage from "./pages/MediaDetailsPage";
 import PlayerPage from "./pages/PlayerPage";
-import { useAppStore } from "./stores/useAppStore";
+import { useSettingsStore } from "./stores/useSettingsStore";
 
 function App() {
-  const theme = useAppStore((state) => state.theme);
+  const { settings, loadSettings } = useSettingsStore();
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+    loadSettings();
+  }, [loadSettings]);
+
+  useEffect(() => {
+    let activeTheme = settings.theme;
+    
+    // Handle system preference if theme is "system"
+    if (activeTheme === "system") {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      activeTheme = prefersDark ? "dark" : "light";
+    }
+
+    document.documentElement.setAttribute("data-theme", activeTheme);
+  }, [settings.theme]);
 
   return (
     <BrowserRouter>
