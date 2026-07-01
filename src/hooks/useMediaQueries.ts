@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { mockMediaService } from "../services/mock/mockMediaService";
+import type { MediaType } from "../types/media";
 
 export const mediaKeys = {
   all: ["media"] as const,
@@ -40,17 +41,25 @@ export function useRecentlyAdded() {
 }
 
 export function useSearchMedia(query: string) {
+  const normalizedQuery = query.trim();
+
   return useQuery({
-    queryKey: mediaKeys.search(query),
-    queryFn: () => mockMediaService.searchMedia(query),
-    enabled: query.length > 0,
+    queryKey: mediaKeys.search(normalizedQuery),
+    queryFn: () => mockMediaService.searchMedia(normalizedQuery),
+    enabled: normalizedQuery.length > 0,
   });
 }
 
-export function useMediaDetails(type: string, id: string) {
+export function useMediaDetails(type: MediaType | undefined, id: string | undefined) {
   return useQuery({
-    queryKey: mediaKeys.details(type, id),
-    queryFn: () => mockMediaService.getMediaDetails(type, id),
+    queryKey: mediaKeys.details(type ?? "unknown", id ?? "unknown"),
+    queryFn: () => {
+      if (!type || !id) {
+        throw new Error("Media type and id are required");
+      }
+
+      return mockMediaService.getMediaDetails(type, id);
+    },
     enabled: !!type && !!id,
   });
 }

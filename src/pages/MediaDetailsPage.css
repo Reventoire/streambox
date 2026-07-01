@@ -176,6 +176,12 @@
   transform: translateY(-2px);
 }
 
+.icon-action-btn.active {
+  background-color: rgba(99, 102, 241, 0.25);
+  color: var(--accent-primary-hover);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
 .seasons-section {
   padding: 48px;
   display: flex;
@@ -196,6 +202,48 @@
 
 .season-card h3 {
   margin-bottom: 12px;
+}
+
+.episode-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.episode-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+}
+
+.episode-number {
+  flex: 0 0 auto;
+  color: var(--accent-primary-hover);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.episode-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.episode-title {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.episode-description {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.45;
 }
 
 @media (max-width: 900px) {

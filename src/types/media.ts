@@ -1,4 +1,10 @@
-export type MediaType = "movie" | "series";
+export const MEDIA_TYPES = ["movie", "series"] as const;
+
+export type MediaType = (typeof MEDIA_TYPES)[number];
+
+export function isMediaType(value: string | undefined): value is MediaType {
+  return MEDIA_TYPES.some((mediaType) => mediaType === value);
+}
 
 export interface Genre {
   id: string;
@@ -6,7 +12,11 @@ export interface Genre {
 }
 
 export interface WatchProgress {
+  mediaId: string;
+  mediaType: MediaType;
   progressPercentage: number;
+  progressSeconds: number;
+  durationSeconds: number;
   lastWatchedAt: string; // ISO Date String
 }
 

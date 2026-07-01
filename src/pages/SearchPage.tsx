@@ -1,16 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search as SearchIcon } from "lucide-react";
 import MediaGrid from "../components/media/MediaGrid";
 import MediaCard from "../components/media/MediaCard";
 import PageHeader from "../components/shared/PageHeader";
 import LoadingState from "../components/shared/LoadingState";
 import EmptyState from "../components/shared/EmptyState";
+import ErrorState from "../components/shared/ErrorState";
 import { useSearchMedia } from "../hooks/useMediaQueries";
 import "./SearchPage.css";
 
 export default function SearchPage() {
-  const [query, setQuery] = useState("");
-  const { data: results, isLoading, isError } = useSearchMedia(query);
+  const [searchParams] = useSearchParams();
+  const urlQuery = searchParams.get("q") ?? "";
+  const [query, setQuery] = useState(urlQuery);
+  const normalizedQuery = query.trim();
+  const { data: results, isLoading, isError, refetch } = useSearchMedia(normalizedQuery);
+
+  useEffect(() => {
+    setQuery(urlQuery);
+  }, [urlQuery]);
 
   return (
     <div className="page-container search-page">
@@ -24,7 +33,7 @@ export default function SearchPage() {
         <input 
           type="text" 
           className="search-page-input" 
-          placeholder="Search by title, genre, or description..."
+          placeholder="Search by title, genre, year, type, or description..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           autoFocus
@@ -32,7 +41,7 @@ export default function SearchPage() {
       </div>
 
       <div className="search-results-area">
-        {!query ? (
+        {!normalizedQuery ? (
           <EmptyState 
             title="What are you looking for?" 
             message="Type in the search bar above to find your next favorite movie or series." 
@@ -41,9 +50,10 @@ export default function SearchPage() {
         ) : isLoading ? (
           <LoadingState message="Searching..." />
         ) : isError ? (
-          <EmptyState 
+          <ErrorState
             title="Search Error" 
             message="Something went wrong while searching. Please try again." 
+            onRetry={() => void refetch()}
           />
         ) : results && results.length > 0 ? (
           <MediaGrid>
@@ -54,7 +64,7 @@ export default function SearchPage() {
         ) : (
           <EmptyState 
             title="No matches found" 
-            message={`We couldn't find anything for "${query}". Try adjusting your keywords.`} 
+            message={`We couldn't find anything for "${normalizedQuery}". Try adjusting your keywords.`} 
           />
         )}
       </div>

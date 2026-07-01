@@ -3,12 +3,14 @@ import { AlertTriangle } from "lucide-react";
 interface ErrorStateProps {
   title?: string;
   message?: string;
+  actionLabel?: string;
   onRetry?: () => void;
 }
 
 export default function ErrorState({ 
   title = "Something went wrong", 
   message = "An error occurred while trying to fetch the data.",
+  actionLabel = "Try Again",
   onRetry 
 }: ErrorStateProps) {
   return (
@@ -53,7 +55,7 @@ export default function ErrorState({
           onMouseOver={(e) => e.currentTarget.style.backgroundColor = "var(--accent-primary-hover)"}
           onMouseOut={(e) => e.currentTarget.style.backgroundColor = "var(--accent-primary)"}
         >
-          Try Again
+          {actionLabel}
         </button>
       )}
     </div>

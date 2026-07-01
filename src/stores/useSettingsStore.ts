@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { AppSettings, DEFAULT_SETTINGS } from "../types/settings";
 import { settingsService } from "../services/settings/settingsService";
+import { getErrorMessage } from "../utils/errors";
 
 interface SettingsState {
   settings: AppSettings;
@@ -21,8 +22,8 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     try {
       const data = await settingsService.getAppSettings();
       set({ settings: data, isLoading: false });
-    } catch (err: any) {
-      set({ error: err.message || "Failed to load settings", isLoading: false });
+    } catch (err: unknown) {
+      set({ error: getErrorMessage(err, "Failed to load settings"), isLoading: false });
     }
   },
 
@@ -35,9 +36,9 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     
     try {
       await settingsService.saveAppSettings(updated);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Revert on failure
-      set({ settings: current, error: err.message || "Failed to save settings" });
+      set({ settings: current, error: getErrorMessage(err, "Failed to save settings") });
     }
   },
 
@@ -46,8 +47,8 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     try {
       const defaults = await settingsService.resetAppSettings();
       set({ settings: defaults, isLoading: false });
-    } catch (err: any) {
-      set({ error: err.message || "Failed to reset settings", isLoading: false });
+    } catch (err: unknown) {
+      set({ error: getErrorMessage(err, "Failed to reset settings"), isLoading: false });
     }
   }
 }));

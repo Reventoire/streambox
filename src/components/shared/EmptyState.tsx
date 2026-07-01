@@ -1,9 +1,10 @@
 import { FileQuestion } from "lucide-react";
+import type { ReactNode } from "react";
 
 interface EmptyStateProps {
   title?: string;
   message?: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
 }
 
 export default function EmptyState({ 

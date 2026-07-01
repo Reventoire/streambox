@@ -1,6 +1,6 @@
 import { Play } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { MediaItem } from "../../types/media";
+import { Link } from "react-router-dom";
+import type { MediaItem } from "../../types/media";
 import "./MediaCard.css";
 
 interface MediaCardProps {
@@ -8,14 +8,12 @@ interface MediaCardProps {
 }
 
 export default function MediaCard({ item }: MediaCardProps) {
-  const navigate = useNavigate();
-
-  const handleClick = () => {
-    navigate(`/media/${item.type}/${item.id}`);
-  };
-
   return (
-    <div className="media-card" onClick={handleClick}>
+    <Link
+      to={`/media/${item.type}/${item.id}`}
+      className="media-card"
+      aria-label={`Open ${item.title} details`}
+    >
       <div className="media-card-poster-wrapper">
         {item.posterUrl ? (
           <img src={item.posterUrl} alt={item.title} className="media-card-poster" loading="lazy" />
@@ -26,9 +24,9 @@ export default function MediaCard({ item }: MediaCardProps) {
         )}
         
         <div className="media-card-overlay">
-          <button className="media-card-play-btn">
+          <span className="media-card-play-btn" aria-hidden="true">
             <Play size={24} fill="currentColor" />
-          </button>
+          </span>
         </div>
         
         {item.type && (
@@ -41,7 +39,7 @@ export default function MediaCard({ item }: MediaCardProps) {
           <div className="media-card-progress-bar">
             <div 
               className="media-card-progress-fill" 
-              style={{ width: `${item.watchProgress.progressPercentage}%` }}
+              style={{ width: `${Math.max(0, Math.min(item.watchProgress.progressPercentage, 100))}%` }}
             />
           </div>
         )}
@@ -51,6 +49,6 @@ export default function MediaCard({ item }: MediaCardProps) {
         <h3 className="media-card-title" title={item.title}>{item.title}</h3>
         {item.year && <span className="media-card-year">{item.year}</span>}
       </div>
-    </div>
+    </Link>
   );
 }

@@ -1,4 +1,31 @@
-import { MediaDetails, MediaItem } from "../../types/media";
+import type { Episode, MediaDetails, MediaItem, MediaType } from "../../types/media";
+
+const MOCK_DELAY_MS = {
+  continueWatching: 400,
+  details: 500,
+  popularSeries: 700,
+  recentlyAdded: 800,
+  search: 500,
+  trendingMovies: 600,
+} as const;
+
+const mediaTypeSearchLabels: Record<MediaType, string[]> = {
+  movie: ["movie", "film"],
+  series: ["series", "show", "tv"],
+};
+
+function createEpisodes(
+  seasonId: string,
+  titles: Array<{ title: string; description: string }>,
+): Episode[] {
+  return titles.map((episode, index) => ({
+    id: `${seasonId}-e${index + 1}`,
+    seasonId,
+    episodeNumber: index + 1,
+    title: episode.title,
+    description: episode.description,
+  }));
+}
 
 // Pre-define 12 mock media items for local discovery
 const MOCK_DATA: MediaDetails[] = [
@@ -26,10 +53,29 @@ const MOCK_DATA: MediaDetails[] = [
     description: "A group of smugglers navigating the treacherous asteroid belts of the outer rim must decide between saving themselves or saving humanity.",
     posterUrl: "https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?w=500&q=80",
     backdropUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&q=80",
+    runtime: 45,
     seasons: [
-      { id: "s1-s1", seasonNumber: 1, title: "Season 1", episodes: [] }
+      {
+        id: "s1-s1",
+        seasonNumber: 1,
+        title: "Season 1",
+        episodes: createEpisodes("s1-s1", [
+          {
+            title: "Signal in the Static",
+            description: "The crew follows a corrupted distress beacon into restricted space.",
+          },
+          {
+            title: "Gravity Debt",
+            description: "A stolen cargo run puts the smugglers at odds with a ruthless broker.",
+          },
+          {
+            title: "Neon Horizon",
+            description: "A hidden map reveals a route that could change the outer colonies.",
+          },
+        ]),
+      },
     ],
-    watchProgress: { progressPercentage: 45, lastWatchedAt: new Date().toISOString() }
+    watchProgress: { mediaId: "s1", mediaType: "series", progressPercentage: 45, progressSeconds: 1215, durationSeconds: 2700, lastWatchedAt: new Date().toISOString() }
   },
   {
     id: "m2",
@@ -54,7 +100,7 @@ const MOCK_DATA: MediaDetails[] = [
     posterUrl: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=500&q=80",
     backdropUrl: "https://images.unsplash.com/photo-1502877338535-766e1452684a?w=1200&q=80",
     runtime: 98,
-    watchProgress: { progressPercentage: 80, lastWatchedAt: new Date().toISOString() }
+    watchProgress: { mediaId: "m3", mediaType: "movie", progressPercentage: 80, progressSeconds: 4704, durationSeconds: 5880, lastWatchedAt: new Date().toISOString() }
   },
   {
     id: "s2",
@@ -66,8 +112,27 @@ const MOCK_DATA: MediaDetails[] = [
     description: "Epic fantasy detailing the fall of the last great empire of magic.",
     posterUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&q=80",
     backdropUrl: "https://images.unsplash.com/photo-1605806616949-1e87b487cb2a?w=1200&q=80",
+    runtime: 52,
     seasons: [
-      { id: "s2-s1", seasonNumber: 1, title: "Season 1", episodes: [] }
+      {
+        id: "s2-s1",
+        seasonNumber: 1,
+        title: "Season 1",
+        episodes: createEpisodes("s2-s1", [
+          {
+            title: "Ashes of the First Gate",
+            description: "A young archivist finds proof that the empire's origin story is false.",
+          },
+          {
+            title: "The Hollow Crown",
+            description: "Rival houses gather as forbidden magic returns to the capital.",
+          },
+          {
+            title: "Storm Over Vaelor",
+            description: "An ancient pact forces enemies to defend the same city walls.",
+          },
+        ]),
+      },
     ]
   },
   {
@@ -104,9 +169,38 @@ const MOCK_DATA: MediaDetails[] = [
     description: "Explore the kitchens of the most renowned chefs in the world.",
     posterUrl: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=500&q=80",
     backdropUrl: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80",
+    runtime: 42,
     seasons: [
-      { id: "s3-s1", seasonNumber: 1, title: "Season 1", episodes: [] },
-      { id: "s3-s2", seasonNumber: 2, title: "Season 2", episodes: [] }
+      {
+        id: "s3-s1",
+        seasonNumber: 1,
+        title: "Season 1",
+        episodes: createEpisodes("s3-s1", [
+          {
+            title: "Fire and Steel",
+            description: "A coastal kitchen builds a menu around flame, smoke, and local catch.",
+          },
+          {
+            title: "The Quiet Table",
+            description: "A tiny mountain restaurant proves how restraint can define a dish.",
+          },
+        ]),
+      },
+      {
+        id: "s3-s2",
+        seasonNumber: 2,
+        title: "Season 2",
+        episodes: createEpisodes("s3-s2", [
+          {
+            title: "Market at Dawn",
+            description: "Chefs race through a morning market to design a single perfect plate.",
+          },
+          {
+            title: "Pressure Service",
+            description: "A legendary dinner service tests timing, trust, and improvisation.",
+          },
+        ]),
+      },
     ]
   },
   {
@@ -131,9 +225,28 @@ const MOCK_DATA: MediaDetails[] = [
     description: "A satirical look at the absurdity of a fast-growing startup.",
     posterUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=500&q=80",
     backdropUrl: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=1200&q=80",
-    watchProgress: { progressPercentage: 15, lastWatchedAt: new Date().toISOString() },
+    watchProgress: { mediaId: "s4", mediaType: "series", progressPercentage: 15, progressSeconds: 405, durationSeconds: 2700, lastWatchedAt: new Date().toISOString() },
+    runtime: 31,
     seasons: [
-      { id: "s4-s1", seasonNumber: 1, title: "Season 1", episodes: [] }
+      {
+        id: "s4-s1",
+        seasonNumber: 1,
+        title: "Season 1",
+        episodes: createEpisodes("s4-s1", [
+          {
+            title: "Minimum Viable Chaos",
+            description: "A product demo derails when the team's prototype starts predicting layoffs.",
+          },
+          {
+            title: "Burn Rate",
+            description: "The founders scramble to impress investors without admitting the numbers.",
+          },
+          {
+            title: "Launch Window",
+            description: "A public release forces everyone to choose between polish and survival.",
+          },
+        ]),
+      },
     ]
   },
   {
@@ -167,17 +280,17 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const mockMediaService = {
   getTrendingMovies: async (): Promise<MediaItem[]> => {
-    await delay(600);
+    await delay(MOCK_DELAY_MS.trendingMovies);
     return MOCK_DATA.filter(m => m.type === "movie").slice(0, 6);
   },
 
   getPopularSeries: async (): Promise<MediaItem[]> => {
-    await delay(700);
+    await delay(MOCK_DELAY_MS.popularSeries);
     return MOCK_DATA.filter(m => m.type === "series").slice(0, 6);
   },
 
   getContinueWatching: async (): Promise<MediaItem[]> => {
-    await delay(400);
+    await delay(MOCK_DELAY_MS.continueWatching);
     return MOCK_DATA.filter(m => m.watchProgress).sort((a, b) => {
       const dateA = new Date(a.watchProgress!.lastWatchedAt).getTime();
       const dateB = new Date(b.watchProgress!.lastWatchedAt).getTime();
@@ -186,24 +299,26 @@ export const mockMediaService = {
   },
 
   getRecentlyAdded: async (): Promise<MediaItem[]> => {
-    await delay(800);
+    await delay(MOCK_DELAY_MS.recentlyAdded);
     return [...MOCK_DATA].sort((a, b) => parseInt(b.year || "0") - parseInt(a.year || "0")).slice(0, 8);
   },
 
   searchMedia: async (query: string): Promise<MediaItem[]> => {
-    await delay(500);
-    if (!query.trim()) return [];
-    const q = query.toLowerCase();
+    await delay(MOCK_DELAY_MS.search);
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+
     return MOCK_DATA.filter(m => 
       m.title.toLowerCase().includes(q) || 
       m.description?.toLowerCase().includes(q) ||
       m.genres?.some(g => g.name.toLowerCase().includes(q)) ||
-      m.year?.includes(q)
+      m.year?.includes(q) ||
+      mediaTypeSearchLabels[m.type].some((label) => label.includes(q))
     );
   },
 
-  getMediaDetails: async (type: string, id: string): Promise<MediaDetails> => {
-    await delay(500);
+  getMediaDetails: async (type: MediaType, id: string): Promise<MediaDetails> => {
+    await delay(MOCK_DELAY_MS.details);
     const media = MOCK_DATA.find(m => m.id === id && m.type === type);
     if (!media) {
       throw new Error("Media not found");
