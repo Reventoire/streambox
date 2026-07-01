@@ -8,7 +8,7 @@ import Badge from "../components/shared/Badge";
 import { useFavoritesStore } from "../stores/useFavoritesStore";
 import { useLibraryStore } from "../stores/useLibraryStore";
 import { isMediaType } from "../types/media";
-import type { PlayerSourcePlaceholder } from "../types/library";
+import type { PlayerSource } from "../types/player";
 import "./MediaDetailsPage.css";
 
 export default function MediaDetailsPage() {
@@ -44,9 +44,11 @@ export default function MediaDetailsPage() {
   const inLibrary = isInLibrary(media.id);
 
   const handlePlay = () => {
-    const source: PlayerSourcePlaceholder = {
+    const source: PlayerSource = {
+      id: `mock-${media.type}-${media.id}`,
       mediaId: media.id,
       mediaType: media.type,
+      sourceType: "mock",
       title: media.title,
       year: media.year,
       posterUrl: media.posterUrl,

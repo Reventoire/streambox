@@ -1,33 +1,39 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Play, Pause, SkipBack, SkipForward, ArrowLeft, Volume2 } from "lucide-react";
-import { PlayerSourcePlaceholder } from "../types/library";
-import { usePlaybackStore } from "../stores/usePlaybackStore";
+import { ArrowLeft, Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
 import { useHistoryStore } from "../stores/useHistoryStore";
+import { usePlaybackStore } from "../stores/usePlaybackStore";
+import type { PlayerSource } from "../types/player";
 import "./PlayerPage.css";
 
 function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s.toString().padStart(2, "0")}`;
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 }
 
 export default function PlayerPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const source = location.state?.source as PlayerSourcePlaceholder | undefined;
+  const source = location.state?.source as PlayerSource | undefined;
 
-  const { session, startSession, updateProgress, togglePlayPause, endSession } = usePlaybackStore();
+  const {
+    playerState,
+    startSession,
+    togglePlayPause,
+    seekTo,
+    seekRelative,
+    setVolume,
+    setPlaybackSpeed,
+    endSession,
+  } = usePlaybackStore();
   const { addHistoryEntry } = useHistoryStore();
 
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [localProgress, setLocalProgress] = useState(0);
-
-  // Start session and record history on mount
   useEffect(() => {
     if (!source) return;
-    startSession(source);
-    addHistoryEntry({
+
+    void startSession(source);
+    void addHistoryEntry({
       id: `${source.mediaId}-${Date.now()}`,
       mediaId: source.mediaId,
       mediaType: source.mediaType,
@@ -37,58 +43,29 @@ export default function PlayerPage() {
       watchedAt: new Date().toISOString(),
       progressPercentage: 0,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Simulate playback ticking
-  useEffect(() => {
-    if (!session) return;
-
-    if (session.isPlaying) {
-      intervalRef.current = setInterval(() => {
-        const next = Math.min(session.progressSeconds + 1, session.durationSeconds);
-        setLocalProgress(next);
-        updateProgress(next);
-        if (next >= session.durationSeconds) {
-          clearInterval(intervalRef.current!);
-        }
-      }, 1000);
-    } else {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    }
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      void endSession();
     };
-  }, [session?.isPlaying, session?.progressSeconds]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      endSession();
-    };
-  }, []);
+  }, [addHistoryEntry, endSession, source, startSession]);
 
   const handleStop = () => {
-    endSession();
+    void endSession();
     navigate(-1);
   };
 
-  const handleSeek = (delta: number) => {
-    if (!session) return;
-    const next = Math.max(0, Math.min(session.progressSeconds + delta, session.durationSeconds));
-    setLocalProgress(next);
-    updateProgress(next);
+  const handleSeek = (deltaSeconds: number) => {
+    void seekRelative(deltaSeconds);
   };
 
-  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!session) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const ratio = (e.clientX - rect.left) / rect.width;
-    const next = Math.floor(ratio * session.durationSeconds);
-    setLocalProgress(next);
-    updateProgress(next);
+  const duration = playerState.progress.durationSeconds || source?.durationSeconds || 0;
+
+  const handleProgressClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (duration <= 0) return;
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const ratio = (event.clientX - rect.left) / rect.width;
+    void seekTo(Math.floor(ratio * duration));
   };
 
   if (!source) {
@@ -102,18 +79,17 @@ export default function PlayerPage() {
     );
   }
 
-  const progress = session?.progressSeconds ?? localProgress;
-  const duration = source.durationSeconds;
+  const progress = playerState.progress.currentTimeSeconds;
   const progressPct = duration > 0 ? (progress / duration) * 100 : 0;
-  const isPlaying = session?.isPlaying ?? false;
+  const isPlaying = playerState.status === "playing";
+  const isLoading = playerState.status === "loading";
 
   const subtitle = source.episodeTitle
-    ? `S${source.seasonNumber} E${source.episodeNumber} — ${source.episodeTitle}`
+    ? `S${source.seasonNumber} E${source.episodeNumber} - ${source.episodeTitle}`
     : source.year;
 
   return (
     <div className="player-page">
-      {/* Backdrop */}
       <div className="player-backdrop-wrapper">
         {source.backdropUrl ? (
           <img src={source.backdropUrl} alt={source.title} className="player-backdrop" />
@@ -125,7 +101,6 @@ export default function PlayerPage() {
         <div className="player-overlay" />
       </div>
 
-      {/* Top bar */}
       <div className="player-topbar">
         <button className="back-btn" onClick={handleStop}>
           <ArrowLeft size={24} />
@@ -134,15 +109,25 @@ export default function PlayerPage() {
           <span className="player-title">{source.title}</span>
           {subtitle && <span className="player-subtitle">{subtitle}</span>}
         </div>
-        <Volume2 size={22} className="text-muted" />
+        <div className="player-volume-control">
+          <Volume2 size={22} className="text-muted" />
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={playerState.volume}
+            onChange={(event) => void setVolume(Number(event.target.value))}
+            aria-label="Volume"
+          />
+        </div>
       </div>
 
-      {/* Placeholder notice */}
       <div className="player-notice">
-        <span>⚠️ Real playback is not yet available — this is a placeholder session.</span>
+        <span>
+          Real playback is not yet available. This session is running on the mock player backend.
+        </span>
       </div>
 
-      {/* Controls */}
       <div className="player-controls-area">
         <div className="player-progress-track" onClick={handleProgressClick}>
           <div className="player-progress-fill" style={{ width: `${progressPct}%` }} />
@@ -158,13 +143,34 @@ export default function PlayerPage() {
           <button className="player-btn" onClick={() => handleSeek(-10)} title="Rewind 10s">
             <SkipBack size={28} />
           </button>
-          <button className="player-btn player-btn-main" onClick={togglePlayPause}>
-            {isPlaying ? <Pause size={36} fill="currentColor" /> : <Play size={36} fill="currentColor" />}
+          <button
+            className="player-btn player-btn-main"
+            disabled={isLoading}
+            onClick={() => void togglePlayPause()}
+          >
+            {isPlaying ? (
+              <Pause size={36} fill="currentColor" />
+            ) : (
+              <Play size={36} fill="currentColor" />
+            )}
           </button>
           <button className="player-btn" onClick={() => handleSeek(10)} title="Forward 10s">
             <SkipForward size={28} />
           </button>
         </div>
+
+        <select
+          className="player-speed-select"
+          value={playerState.playbackSpeed}
+          onChange={(event) => void setPlaybackSpeed(Number(event.target.value))}
+          aria-label="Playback speed"
+        >
+          <option value="0.5">0.5x</option>
+          <option value="1">1x</option>
+          <option value="1.25">1.25x</option>
+          <option value="1.5">1.5x</option>
+          <option value="2">2x</option>
+        </select>
 
         <button className="player-stop-btn" onClick={handleStop}>
           Stop & Go Back

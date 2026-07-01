@@ -1,4 +1,5 @@
 import { MediaItem, MediaType } from "./media";
+export type { PlaybackSession, PlayerSource } from "./player";
 
 export interface LibraryItem {
   mediaId: string;
@@ -30,35 +31,6 @@ export interface WatchHistoryItem {
   posterUrl?: string;
   watchedAt: string; // ISO Date String
   progressPercentage: number;
-}
-
-/**
- * Describes the intent to play something, without resolving a real stream.
- * Passed via router state when navigating to /player.
- */
-export interface PlayerSourcePlaceholder {
-  mediaId: string;
-  mediaType: MediaType;
-  title: string;
-  year?: string;
-  posterUrl?: string;
-  backdropUrl?: string;
-  // For series playback
-  episodeId?: string;
-  seasonNumber?: number;
-  episodeNumber?: number;
-  episodeTitle?: string;
-  // Duration in seconds (mock)
-  durationSeconds: number;
-}
-
-/**
- * The active in-memory playback session.
- */
-export interface PlaybackSession extends PlayerSourcePlaceholder {
-  progressSeconds: number;
-  isPlaying: boolean;
-  startedAt: string; // ISO Date String
 }
 
 // Helper to convert a MediaItem snapshot to LibraryItem
