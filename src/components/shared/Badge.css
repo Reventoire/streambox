@@ -1,0 +1,28 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 6px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.badge-default {
+  background-color: var(--bg-surface-active);
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+}
+
+.badge-outline {
+  background-color: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-highlight);
+}
+
+.badge-accent {
+  background-color: rgba(99, 102, 241, 0.15);
+  color: var(--accent-primary-hover);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}

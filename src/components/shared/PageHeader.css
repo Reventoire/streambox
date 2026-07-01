@@ -1,0 +1,31 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.page-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.page-header-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.page-header-description {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

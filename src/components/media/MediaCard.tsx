@@ -1,21 +1,24 @@
 import { Play } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { MediaItem } from "../../types/media";
 import "./MediaCard.css";
 
 interface MediaCardProps {
-  id: string;
-  title: string;
-  year?: string;
-  type?: "movie" | "series";
-  posterUrl?: string;
-  onClick?: (id: string) => void;
+  item: MediaItem;
 }
 
-export default function MediaCard({ id, title, year, type, posterUrl, onClick }: MediaCardProps) {
+export default function MediaCard({ item }: MediaCardProps) {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/media/${item.type}/${item.id}`);
+  };
+
   return (
-    <div className="media-card" onClick={() => onClick?.(id)}>
+    <div className="media-card" onClick={handleClick}>
       <div className="media-card-poster-wrapper">
-        {posterUrl ? (
-          <img src={posterUrl} alt={title} className="media-card-poster" loading="lazy" />
+        {item.posterUrl ? (
+          <img src={item.posterUrl} alt={item.title} className="media-card-poster" loading="lazy" />
         ) : (
           <div className="media-card-placeholder">
             <span className="media-card-placeholder-text">No Image</span>
@@ -28,16 +31,25 @@ export default function MediaCard({ id, title, year, type, posterUrl, onClick }:
           </button>
         </div>
         
-        {type && (
+        {item.type && (
           <div className="media-card-badge">
-            {type === "movie" ? "Movie" : "TV"}
+            {item.type === "movie" ? "Movie" : "TV"}
+          </div>
+        )}
+
+        {item.watchProgress && (
+          <div className="media-card-progress-bar">
+            <div 
+              className="media-card-progress-fill" 
+              style={{ width: `${item.watchProgress.progressPercentage}%` }}
+            />
           </div>
         )}
       </div>
       
       <div className="media-card-info">
-        <h3 className="media-card-title" title={title}>{title}</h3>
-        {year && <span className="media-card-year">{year}</span>}
+        <h3 className="media-card-title" title={item.title}>{item.title}</h3>
+        {item.year && <span className="media-card-year">{item.year}</span>}
       </div>
     </div>
   );
