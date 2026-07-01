@@ -4,6 +4,7 @@ import SettingsRow from "../components/settings/SettingsRow";
 import Toggle from "../components/settings/Toggle";
 import Select, { SelectOption } from "../components/settings/Select";
 import ProviderCard from "../components/settings/ProviderCard";
+import StremioAddonManifestForm from "../components/settings/StremioAddonManifestForm";
 import PageHeader from "../components/shared/PageHeader";
 import {
   getProviderSummariesByType,
@@ -11,6 +12,7 @@ import {
   type ProviderSummary,
 } from "../hooks/useProviderQueries";
 import { useSettingsStore } from "../stores/useSettingsStore";
+import type { ConfiguredStremioAddon } from "../types/settings";
 import "./SettingsPage.css";
 
 const THEME_OPTIONS: SelectOption[] = [
@@ -54,7 +56,7 @@ function renderMockProviderCard(summary: ProviderSummary) {
 
 export default function SettingsPage() {
   const { settings, updateSettings, resetSettings, isLoading } = useSettingsStore();
-  const { data: providerSummaries } = useProviderSummaries();
+  const { data: providerSummaries } = useProviderSummaries(settings.stremioAddons);
 
   const metadataProviderCards = [
     ...getProviderSummariesByType(providerSummaries, "metadata"),
@@ -63,6 +65,45 @@ export default function SettingsPage() {
   const streamProviderCards = getProviderSummariesByType(providerSummaries, "stream");
   const stremioProviderCards = getProviderSummariesByType(providerSummaries, "stremio-addon");
   const debridProviderCards = getProviderSummariesByType(providerSummaries, "debrid");
+
+  const handleSaveStremioAddon = (addon: ConfiguredStremioAddon) => {
+    const existingAddons = settings.stremioAddons.filter((item) => item.id !== addon.id);
+    void updateSettings({ stremioAddons: [...existingAddons, addon] });
+  };
+
+  const renderStremioProviderCard = (summary: ProviderSummary) => {
+    const { provider, health } = summary;
+    const savedAddon = settings.stremioAddons.find((addon) => addon.id === provider.id);
+
+    if (!savedAddon) {
+      return renderMockProviderCard(summary);
+    }
+
+    return (
+      <ProviderCard
+        key={provider.id}
+        name={provider.manifest.name}
+        description={provider.manifest.description}
+        enabled={savedAddon.enabled}
+        typeLabel={provider.type}
+        status={health.status}
+        capabilities={provider.capabilities}
+        configurationState={provider.config.configurationState}
+        healthMessage={health.message}
+        version={provider.manifest.version}
+        onToggle={(enabled) => {
+          const updated = settings.stremioAddons.map((addon) =>
+            addon.id === savedAddon.id ? { ...addon, enabled } : addon,
+          );
+          void updateSettings({ stremioAddons: updated });
+        }}
+        onRemove={() => {
+          const updated = settings.stremioAddons.filter((addon) => addon.id !== savedAddon.id);
+          void updateSettings({ stremioAddons: updated });
+        }}
+      />
+    );
+  };
 
   if (isLoading) {
     return (
@@ -217,35 +258,15 @@ export default function SettingsPage() {
       {/* Stremio Addons */}
       <SettingsSection
         title="Stremio Addons"
-        description="Add and manage Stremio-compatible addons for additional content sources. Real addon manifests are not loaded yet."
+        description="Fetch and save addon manifests only. Catalog, stream, torrent, Debrid, and playback integration remain disabled."
       >
+        <StremioAddonManifestForm onSave={handleSaveStremioAddon} />
         <div className="settings-provider-list">
-          {stremioProviderCards.map(renderMockProviderCard)}
+          {stremioProviderCards.map(renderStremioProviderCard)}
         </div>
         {settings.stremioAddons.length === 0 && (
-          <p className="settings-empty-hint">No user addons configured. Manifest URL loading is planned for a later milestone.</p>
+          <p className="settings-empty-hint">No user addons saved yet. Fetch a manifest URL above to preview and save metadata locally.</p>
         )}
-        {settings.stremioAddons.map((addon) => (
-          <ProviderCard
-            key={addon.id}
-            name={addon.name}
-            description={addon.manifestUrl}
-            enabled={addon.enabled}
-            onToggle={(enabled) => {
-              const updated = settings.stremioAddons.map((a) =>
-                a.id === addon.id ? { ...a, enabled } : a
-              );
-              updateSettings({ stremioAddons: updated });
-            }}
-            onRemove={() => {
-              const updated = settings.stremioAddons.filter((a) => a.id !== addon.id);
-              updateSettings({ stremioAddons: updated });
-            }}
-          />
-        ))}
-        <button className="add-provider-btn" disabled title="Real addon configuration is not enabled yet">
-          <Plus size={18} /> Add Stremio Addon Later
-        </button>
       </SettingsSection>
 
       {/* Debrid Providers */}

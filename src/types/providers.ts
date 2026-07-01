@@ -31,7 +31,8 @@ export type ProviderCapability =
   | "stremio.manifest"
   | "stremio.catalog"
   | "stremio.metadata"
-  | "stremio.stream";
+  | "stremio.stream"
+  | "stremio.subtitles";
 
 export interface ProviderHealth {
   providerId: ProviderId;
@@ -113,4 +114,3 @@ export interface StreamSearchRequest {
   media: MediaItem;
   episodeId?: string;
 }
-

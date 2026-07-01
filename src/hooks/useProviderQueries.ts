@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { ProviderHealth, ProviderType } from "../types/providers";
+import type { ConfiguredStremioAddon } from "../types/settings";
+import { registerConfiguredStremioAddonProviders } from "../services/providers/configuredStremioAddonProvider";
 import type { AnyProvider } from "../services/providers/providerInterfaces";
 import { registerMockProviders } from "../services/providers/mockProviders";
 import { listProviders, listProvidersByType } from "../services/providers/providerRegistry";
@@ -13,10 +15,24 @@ export interface ProviderSummary {
 
 export const providerKeys = {
   all: ["providers"] as const,
-  summaries: () => [...providerKeys.all, "summaries"] as const,
+  summaries: (addons: ConfiguredStremioAddon[]) =>
+    [
+      ...providerKeys.all,
+      "summaries",
+      addons.map((addon) => ({
+        id: addon.id,
+        enabled: addon.enabled,
+        manifestUrl: addon.manifestUrl,
+        capabilities: addon.capabilities?.join(","),
+        version: addon.version,
+      })),
+    ] as const,
 };
 
-async function getProviderSummaries(): Promise<ProviderSummary[]> {
+async function getProviderSummaries(
+  configuredStremioAddons: ConfiguredStremioAddon[],
+): Promise<ProviderSummary[]> {
+  registerConfiguredStremioAddonProviders(configuredStremioAddons);
   const providers = listProviders();
   const summaries = await Promise.all(
     providers.map(async (provider) => ({
@@ -28,10 +44,10 @@ async function getProviderSummaries(): Promise<ProviderSummary[]> {
   return summaries.sort((a, b) => a.provider.manifest.name.localeCompare(b.provider.manifest.name));
 }
 
-export function useProviderSummaries() {
+export function useProviderSummaries(configuredStremioAddons: ConfiguredStremioAddon[] = []) {
   return useQuery({
-    queryKey: providerKeys.summaries(),
-    queryFn: getProviderSummaries,
+    queryKey: providerKeys.summaries(configuredStremioAddons),
+    queryFn: () => getProviderSummaries(configuredStremioAddons),
     staleTime: 30_000,
   });
 }
@@ -53,4 +69,3 @@ export function getProviderSummariesByType(
     },
   }));
 }
-

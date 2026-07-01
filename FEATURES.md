@@ -3,10 +3,10 @@
 This document tracks the status of all planned features.
 
 ## Legend
-- ✅ Complete
-- 🔄 In Progress / Partial
-- ⬜ Planned
-- ❌ Not Planned
+- Complete
+- Partial
+- Planned
+- Not Planned
 
 ---
 
@@ -14,13 +14,13 @@ This document tracks the status of all planned features.
 
 | Feature | Status | Notes |
 |---|---|---|
-| Dark-first design system | ✅ | CSS variables, glassmorphism |
-| Sidebar navigation | ✅ | Home, Search, Library, Favorites, History, Settings |
-| Topbar with search | ✅ | |
-| React Router integration | ✅ | All routes active |
-| Reusable layout components | ✅ | AppLayout, Sidebar, Topbar |
-| Placeholder pages for all routes | ✅ | All six routes |
-| Responsive / mobile-compatible layout | ✅ | No desktop-only fixed assumptions |
+| Dark-first design system | Complete | CSS variables, glassmorphism |
+| Sidebar navigation | Complete | Home, Search, Library, Favorites, History, Settings |
+| Topbar with search | Complete | |
+| React Router integration | Complete | All routes active |
+| Reusable layout components | Complete | AppLayout, Sidebar, Topbar |
+| Placeholder pages for all routes | Complete | All six routes |
+| Responsive / mobile-compatible layout | Complete | No desktop-only fixed assumptions |
 
 ---
 
@@ -28,16 +28,16 @@ This document tracks the status of all planned features.
 
 | Feature | Status | Notes |
 |---|---|---|
-| Normalized media types | ✅ | MediaItem, MediaDetails, Season, Episode, Genre, WatchProgress |
-| Mock media service | ✅ | 12 items; simulated async delay |
-| TanStack Query integration | ✅ | Hooks: useTrendingMovies, useSearchMedia, etc. |
-| Home page hero + content rows | ✅ | Hero banner, Continue Watching, Trending, Popular, Recent |
-| Horizontal scrollable media rows | ✅ | Touch-friendly MediaRow component |
-| Search page with filtering | ✅ | Real-time mock search by title, genre, description |
-| Media details page | ✅ | Backdrop, poster, metadata, genres, season/episode placeholders |
-| MediaCard → detail navigation | ✅ | react-router-dom useNavigate |
-| Reusable media components | ✅ | MediaCard, MediaGrid, MediaRow, Badge, PageHeader |
-| EmptyState / LoadingState / ErrorState | ✅ | |
+| Normalized media types | Complete | MediaItem, MediaDetails, Season, Episode, Genre, WatchProgress |
+| Mock media service | Complete | 12 items; simulated async delay |
+| TanStack Query integration | Complete | Hooks: useTrendingMovies, useSearchMedia, etc. |
+| Home page hero + content rows | Complete | Hero banner, Continue Watching, Trending, Popular, Recent |
+| Horizontal scrollable media rows | Complete | Touch-friendly MediaRow component |
+| Search page with filtering | Complete | Real-time mock search by title, genre, description |
+| Media details page | Complete | Backdrop, poster, metadata, genres, season/episode placeholders |
+| MediaCard to detail navigation | Complete | react-router-dom navigation |
+| Reusable media components | Complete | MediaCard, MediaGrid, MediaRow, Badge, PageHeader |
+| EmptyState / LoadingState / ErrorState | Complete | |
 
 ---
 
@@ -45,19 +45,19 @@ This document tracks the status of all planned features.
 
 | Feature | Status | Notes |
 |---|---|---|
-| App settings types | ✅ | ThemeMode, PlayerSettings, PrivacySettings, etc. |
-| Local settings persistence | 🔄 | Using localStorage; Tauri secure storage pending |
-| Zustand settings store | ✅ | loadSettings, updateSettings, resetSettings |
-| Settings page — General section | ✅ | Theme, language |
-| Settings page — Player section | ✅ | Auto-play next, external player |
-| Settings page — Privacy section | ✅ | History tracking, crash reports |
-| Settings page — Metadata Providers | ✅ | Provider select |
-| Settings page — Stremio Addon shell | 🔄 | Add/remove/toggle UI only; no manifest loading |
-| Settings page — Debrid Provider shell | 🔄 | Add/remove/toggle UI only; no credential flow |
-| Reusable settings components | ✅ | SettingsSection, SettingsRow, Toggle, Select, ProviderCard |
-| Theme switching (dark/light/system) | ✅ | Persisted and applied on load |
-| Reset settings action | ✅ | Clears localStorage, restores defaults |
-| Tauri secure storage backend | ⬜ | Future phase |
+| App settings types | Complete | ThemeMode, PlayerSettings, PrivacySettings, etc. |
+| Local settings persistence | Partial | Using localStorage; Tauri secure storage pending |
+| Zustand settings store | Complete | loadSettings, updateSettings, resetSettings |
+| Settings page - General section | Complete | Theme, language |
+| Settings page - Player section | Complete | Auto-play next, external player |
+| Settings page - Privacy section | Complete | History tracking, crash reports |
+| Settings page - Metadata Providers | Complete | Provider select |
+| Settings page - Stremio Addon shell | Partial | Manifest fetch, preview, save, and toggle UI only |
+| Settings page - Debrid Provider shell | Partial | Add/remove/toggle UI only; no credential flow |
+| Reusable settings components | Complete | SettingsSection, SettingsRow, Toggle, Select, ProviderCard |
+| Theme switching (dark/light/system) | Complete | Persisted and applied on load |
+| Reset settings action | Complete | Clears localStorage, restores defaults |
+| Tauri secure storage backend | Planned | Future phase |
 
 ---
 
@@ -71,6 +71,7 @@ This document tracks the status of all planned features.
 | Mock providers | Partial | Local-only metadata, catalog, stream, Debrid, and Stremio addon providers |
 | Provider health checks | Partial | Mock providers report healthy status |
 | Settings provider cards | Partial | Mock cards show type, status, capabilities, and placeholder config state |
+| Stremio addon manifest support | Partial | URL validation, manifest fetch, preview, local save, provider registration |
 | Real provider credentials | Planned | Not accepted or stored yet |
 
 ---
@@ -79,13 +80,14 @@ This document tracks the status of all planned features.
 
 | Feature | Status | Notes |
 |---|---|---|
-| Stremio addon manifest loading | ⬜ | |
-| Stremio catalog browsing | ⬜ | |
-| Stremio stream fetching | ⬜ | |
-| Real-Debrid integration | ⬜ | |
-| AllDebrid integration | ⬜ | |
-| Torrent stream discovery | ⬜ | |
-| External player launch (Tauri) | ⬜ | |
+| Stremio addon manifest loading | Partial | Manifest fetching only; no catalog, metadata, stream, torrent, or Debrid integration |
+| Stremio catalog browsing | Planned | |
+| Stremio metadata support | Planned | |
+| Stremio stream fetching | Planned | |
+| Real-Debrid integration | Planned | |
+| AllDebrid integration | Planned | |
+| Torrent stream discovery | Planned | |
+| External player launch (Tauri) | Planned | |
 
 ---
 
@@ -93,12 +95,12 @@ This document tracks the status of all planned features.
 
 | Feature | Status | Notes |
 |---|---|---|
-| Embedded player | ⬜ | |
-| HLS/DASH support | ⬜ | |
-| Subtitle selection | ⬜ | |
-| Audio track selection | ⬜ | |
-| Resume from position | ⬜ | |
-| Progress tracking | ⬜ | |
+| Embedded player | Planned | |
+| HLS/DASH support | Planned | |
+| Subtitle selection | Planned | |
+| Audio track selection | Planned | |
+| Resume from position | Planned | |
+| Progress tracking | Planned | |
 
 ---
 
@@ -106,10 +108,10 @@ This document tracks the status of all planned features.
 
 | Feature | Status | Notes |
 |---|---|---|
-| Favorites | ⬜ | |
-| Continue Watching (persisted) | ⬜ | |
-| Watch History | ⬜ | |
-| User library | ⬜ | |
+| Favorites | Planned | |
+| Continue Watching (persisted) | Planned | |
+| Watch History | Planned | |
+| User library | Planned | |
 
 ---
 
@@ -117,7 +119,7 @@ This document tracks the status of all planned features.
 
 | Platform | Status |
 |---|---|
-| Windows (desktop) | ✅ |
-| macOS (desktop) | ⬜ Planned |
-| Linux (desktop) | ⬜ Planned |
-| Android | ⬜ Future |
+| Windows (desktop) | Complete |
+| macOS (desktop) | Planned |
+| Linux (desktop) | Planned |
+| Android | Future |

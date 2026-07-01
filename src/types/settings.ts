@@ -1,3 +1,10 @@
+import type {
+  StremioAddonCapability,
+  StremioCatalogDefinition,
+  StremioManifest,
+  StremioResource,
+} from "./stremio";
+
 export type ThemeMode = "system" | "dark" | "light";
 
 export interface PlayerSettings {
@@ -21,9 +28,17 @@ export interface ConfiguredDebridProvider {
 
 export interface ConfiguredStremioAddon {
   id: string;
+  addonUrl: string;
   manifestUrl: string;
   name: string;
   enabled: boolean;
+  version?: string;
+  description?: string;
+  resources?: StremioResource[];
+  types?: string[];
+  catalogs?: StremioCatalogDefinition[];
+  capabilities?: StremioAddonCapability[];
+  manifest?: StremioManifest;
 }
 
 export interface MetadataProviderSettings {

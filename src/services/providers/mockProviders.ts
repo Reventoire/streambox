@@ -260,9 +260,6 @@ export class MockStremioAddonProvider
   constructor() {
     const capabilities: ProviderCapability[] = [
       "stremio.manifest",
-      "stremio.catalog",
-      "stremio.metadata",
-      "stremio.stream",
     ];
     super(
       "mock.stremio-addon",
@@ -282,27 +279,25 @@ export class MockStremioAddonProvider
   }
 
   async getCatalog(catalogId: string): Promise<MediaItem[]> {
-    const catalogProvider = getProvider<CatalogProvider>("mock.catalog");
-
-    if (!catalogProvider) {
-      throw new ProviderRuntimeError(
-        createCapabilityUnavailableError(this.id, "Mock catalog provider is unavailable."),
-      );
-    }
-
-    return catalogProvider.getCatalog(catalogId);
+    // TODO: Later catalog requests will use manifest catalog definitions after
+    // request validation and provider response normalization are implemented.
+    throw new ProviderRuntimeError(
+      createCapabilityUnavailableError(
+        this.id,
+        `Stremio catalog "${catalogId}" is planned but not enabled yet.`,
+      ),
+    );
   }
 
   async getStreams(request: StreamSearchRequest): Promise<ProviderStream[]> {
-    const streamProvider = getProvider<StreamProvider>("mock.stream");
-
-    if (!streamProvider) {
-      throw new ProviderRuntimeError(
-        createCapabilityUnavailableError(this.id, "Mock stream provider is unavailable."),
-      );
-    }
-
-    return streamProvider.getStreams(request);
+    // TODO: Later stream requests will use the manifest stream resource.
+    // Torrent resolution, scraping, Debrid, and playback integration are disabled.
+    throw new ProviderRuntimeError(
+      createCapabilityUnavailableError(
+        this.id,
+        `Stremio streams for "${request.media.title}" are planned but not enabled yet.`,
+      ),
+    );
   }
 }
 

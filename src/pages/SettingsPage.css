@@ -40,6 +40,153 @@
   gap: 12px;
 }
 
+.stremio-manifest-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.stremio-manifest-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.stremio-manifest-input {
+  min-height: 44px;
+  min-width: 0;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.stremio-manifest-input:focus {
+  outline: 2px solid rgba(99, 102, 241, 0.35);
+  outline-offset: 2px;
+}
+
+.manifest-action-btn,
+.manifest-save-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background-color: var(--accent-primary);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.manifest-action-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.manifest-validation-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
+.manifest-validation-errors p {
+  margin: 0;
+  color: #f87171;
+  font-size: 0.88rem;
+}
+
+.manifest-preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  background-color: rgba(99, 102, 241, 0.08);
+}
+
+.manifest-preview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.manifest-preview-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.manifest-preview-header p {
+  margin: 4px 0 0 0;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+}
+
+.manifest-preview-header span {
+  flex: 0 0 auto;
+  color: var(--accent-primary-hover);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.manifest-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.manifest-preview-grid div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+}
+
+.manifest-preview-grid span {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.manifest-preview-grid strong {
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.manifest-save-btn {
+  align-self: flex-start;
+}
+
 .add-provider-btn {
   display: inline-flex;
   align-items: center;
@@ -72,4 +219,11 @@
   background-color: var(--bg-surface);
   border-color: rgba(99, 102, 241, 0.4);
   color: var(--accent-primary-hover);
+}
+
+@media (max-width: 680px) {
+  .stremio-manifest-input-row,
+  .manifest-preview-grid {
+    grid-template-columns: 1fr;
+  }
 }
