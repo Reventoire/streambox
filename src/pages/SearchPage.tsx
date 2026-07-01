@@ -6,11 +6,18 @@ import PageHeader from "../components/shared/PageHeader";
 import LoadingState from "../components/shared/LoadingState";
 import EmptyState from "../components/shared/EmptyState";
 import { useSearchMedia } from "../hooks/useMediaQueries";
+import { useIsTmdbPreferred, usePreferredMetadataSearch } from "../hooks/useMetadataProviderQueries";
 import "./SearchPage.css";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const { data: results, isLoading, isError } = useSearchMedia(query);
+  const isTmdbPreferred = useIsTmdbPreferred();
+  const {
+    data: tmdbResults,
+    isLoading: isLoadingTmdb,
+    isError: isTmdbError,
+  } = usePreferredMetadataSearch(query);
 
   return (
     <div className="page-container search-page">
@@ -32,6 +39,41 @@ export default function SearchPage() {
       </div>
 
       <div className="search-results-area">
+        {isTmdbPreferred && query && (
+          <section className="search-provider-section">
+            <div className="search-provider-heading">
+              <h2>TMDB results</h2>
+              <span>Preferred metadata provider</span>
+            </div>
+            {isLoadingTmdb ? (
+              <LoadingState message="Searching TMDB..." />
+            ) : isTmdbError ? (
+              <EmptyState
+                title="TMDB search failed"
+                message="Check your TMDB token in Settings and try again."
+              />
+            ) : tmdbResults && tmdbResults.length > 0 ? (
+              <MediaGrid>
+                {tmdbResults.map((item) => (
+                  <MediaCard key={item.id} item={item} />
+                ))}
+              </MediaGrid>
+            ) : (
+              <EmptyState
+                title="No TMDB matches"
+                message={`TMDB did not return matches for "${query}".`}
+              />
+            )}
+          </section>
+        )}
+
+        {isTmdbPreferred && query && (
+          <div className="search-provider-heading secondary">
+            <h2>Local mock results</h2>
+            <span>Development catalog</span>
+          </div>
+        )}
+
         {!query ? (
           <EmptyState 
             title="What are you looking for?" 

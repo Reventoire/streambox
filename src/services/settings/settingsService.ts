@@ -21,7 +21,14 @@ export const settingsService = {
           ...parsed,
           player: { ...DEFAULT_SETTINGS.player, ...(parsed.player || {}) },
           privacy: { ...DEFAULT_SETTINGS.privacy, ...(parsed.privacy || {}) },
-          metadata: { ...DEFAULT_SETTINGS.metadata, ...(parsed.metadata || {}) },
+          metadata: {
+            ...DEFAULT_SETTINGS.metadata,
+            ...(parsed.metadata || {}),
+            tmdb: {
+              ...DEFAULT_SETTINGS.metadata.tmdb,
+              ...(parsed.metadata?.tmdb || {}),
+            },
+          },
         };
       }
     } catch (e) {

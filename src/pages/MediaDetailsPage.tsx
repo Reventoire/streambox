@@ -1,87 +1,142 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { Play, Heart, Plus, ArrowLeft, Clock, Calendar, Film } from "lucide-react";
-import { useMediaDetails } from "../hooks/useMediaQueries";
-import LoadingState from "../components/shared/LoadingState";
-import ErrorState from "../components/shared/ErrorState";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Calendar, Clock, Film, Heart, Play, Plus } from "lucide-react";
 import Badge from "../components/shared/Badge";
+import ErrorState from "../components/shared/ErrorState";
+import LoadingState from "../components/shared/LoadingState";
+import { usePreferredMetadataDetails } from "../hooks/useMetadataProviderQueries";
+import { createPlaceholderPlayerSourceFromMediaDetails } from "../services/player/playerSourceFactory";
+import { usePlaybackStore } from "../stores/usePlaybackStore";
+import type { MediaDetails, MediaItem } from "../types/media";
+import { isMediaType } from "../types/media";
 import "./MediaDetailsPage.css";
+
+interface MediaDetailsLocationState {
+  mediaPreview?: MediaItem;
+}
+
+function createDetailsFromPreview(preview: MediaItem | undefined): MediaDetails | undefined {
+  if (!preview?.id || !isMediaType(preview.type) || !preview.title) {
+    return undefined;
+  }
+
+  return {
+    ...preview,
+    type: preview.type,
+  };
+}
 
 export default function MediaDetailsPage() {
   const { type, id } = useParams<{ type: string; id: string }>();
   const navigate = useNavigate();
-  
-  const { data: media, isLoading, isError, refetch } = useMediaDetails(type || "", id || "");
+  const location = useLocation();
+  const startPlayback = usePlaybackStore((state) => state.startPlayback);
+  const preview = createDetailsFromPreview(
+    (location.state as MediaDetailsLocationState | null)?.mediaPreview,
+  );
 
-  if (isLoading) return <LoadingState message="Loading details..." />;
-  if (isError || !media) return <ErrorState onRetry={() => refetch()} />;
+  const { data: media, isLoading, isError, refetch } = usePreferredMetadataDetails(
+    type || "",
+    id || "",
+  );
+  const playableMedia = media ?? preview;
+
+  const handlePlay = async () => {
+    if (!playableMedia?.id || !isMediaType(playableMedia.type)) {
+      return;
+    }
+
+    const source = createPlaceholderPlayerSourceFromMediaDetails(playableMedia);
+    await startPlayback(source);
+    navigate("/player");
+  };
+
+  if (isLoading && !preview) {
+    return <LoadingState message="Loading details..." />;
+  }
+
+  if ((isError || !playableMedia) && !preview) {
+    return <ErrorState onRetry={() => refetch()} />;
+  }
+
+  if (!playableMedia) {
+    return <ErrorState onRetry={() => refetch()} />;
+  }
 
   return (
     <div className="media-details-page">
       <div className="details-hero">
         <div className="details-backdrop-wrapper">
-          {media.backdropUrl ? (
-            <img src={media.backdropUrl} alt={media.title} className="details-backdrop" />
+          {playableMedia.backdropUrl ? (
+            <img
+              src={playableMedia.backdropUrl}
+              alt={playableMedia.title}
+              className="details-backdrop"
+            />
           ) : (
             <div className="details-backdrop-placeholder" />
           )}
           <div className="details-overlay" />
         </div>
-        
+
         <div className="details-hero-content">
           <button className="back-btn" onClick={() => navigate(-1)}>
             <ArrowLeft size={24} />
           </button>
-          
+
           <div className="details-main">
             <div className="details-poster-wrapper">
-              {media.posterUrl ? (
-                <img src={media.posterUrl} alt={media.title} className="details-poster" />
+              {playableMedia.posterUrl ? (
+                <img
+                  src={playableMedia.posterUrl}
+                  alt={playableMedia.title}
+                  className="details-poster"
+                />
               ) : (
                 <div className="details-poster-placeholder">
                   <Film size={48} className="text-muted" />
                 </div>
               )}
             </div>
-            
+
             <div className="details-info">
-              {media.type && (
-                <Badge variant="accent">
-                  {media.type === "movie" ? "Movie" : "Series"}
-                </Badge>
-              )}
-              
-              <h1 className="details-title">{media.title}</h1>
-              
+              <Badge variant="accent">
+                {playableMedia.type === "movie" ? "Movie" : "Series"}
+              </Badge>
+
+              <h1 className="details-title">{playableMedia.title}</h1>
+
               <div className="details-meta">
-                {media.year && (
+                {playableMedia.year && (
                   <span className="meta-item">
-                    <Calendar size={16} /> {media.year}
+                    <Calendar size={16} /> {playableMedia.year}
                   </span>
                 )}
-                {media.runtime && (
+                {playableMedia.runtime && (
                   <span className="meta-item">
-                    <Clock size={16} /> {media.runtime} min
+                    <Clock size={16} /> {playableMedia.runtime} min
                   </span>
                 )}
-                {media.rating && (
+                {playableMedia.rating && (
                   <span className="meta-item rating">
-                    ★ {media.rating.toFixed(1)}
+                    {"\u2605"} {playableMedia.rating.toFixed(1)}
                   </span>
                 )}
               </div>
-              
-              {media.genres && media.genres.length > 0 && (
+
+              {playableMedia.genres && playableMedia.genres.length > 0 && (
                 <div className="details-genres">
-                  {media.genres.map(g => (
-                    <Badge key={g.id} variant="outline">{g.name}</Badge>
+                  {playableMedia.genres.map((genre) => (
+                    <Badge key={genre.id} variant="outline">
+                      {genre.name}
+                    </Badge>
                   ))}
                 </div>
               )}
-              
-              <p className="details-description">{media.description}</p>
-              
+
+              <p className="details-description">{playableMedia.description}</p>
+
               <div className="details-actions">
-                <button className="btn-primary">
+                <button className="btn-primary" onClick={() => void handlePlay()}>
                   <Play size={20} fill="currentColor" /> Play
                 </button>
                 <button className="icon-action-btn">
@@ -96,19 +151,21 @@ export default function MediaDetailsPage() {
         </div>
       </div>
 
-      {media.type === "series" && media.seasons && (
+      {playableMedia.type === "series" && playableMedia.seasons && (
         <div className="seasons-section">
           <h2>Seasons & Episodes</h2>
           <div className="seasons-list">
-            {media.seasons.map(season => (
+            {playableMedia.seasons.map((season) => (
               <div key={season.id} className="season-card glass-panel">
                 <h3>{season.title}</h3>
                 {season.episodes.length === 0 ? (
                   <p className="text-muted">Episodes coming soon...</p>
                 ) : (
                   <ul>
-                    {season.episodes.map(ep => (
-                      <li key={ep.id}>{ep.episodeNumber}. {ep.title}</li>
+                    {season.episodes.map((episode) => (
+                      <li key={episode.id}>
+                        {episode.episodeNumber}. {episode.title}
+                      </li>
                     ))}
                   </ul>
                 )}

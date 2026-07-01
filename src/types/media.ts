@@ -16,6 +16,18 @@ export interface WatchProgress {
   lastWatchedAt: string; // ISO Date String
 }
 
+/**
+ * Provider IDs must stay distinct. imdbId can be used as a bridge when a
+ * provider explicitly returns it, but Stremio IDs are not assumed to be safely
+ * mappable even when they look IMDb-like.
+ */
+export interface ExternalIds {
+  imdbId?: string;
+  tmdbId?: string;
+  tvdbId?: string;
+  providerSpecificId?: string;
+}
+
 export interface MediaItem {
   id: string;
   type: MediaType;
@@ -27,6 +39,8 @@ export interface MediaItem {
   rating?: number;
   description?: string;
   watchProgress?: WatchProgress;
+  providerId?: string;
+  externalIds?: ExternalIds;
 }
 
 export interface Episode {

@@ -4,6 +4,7 @@ import type {
   StremioManifest,
   StremioResource,
 } from "./stremio";
+import type { TmdbConfig } from "./tmdb";
 
 export type ThemeMode = "system" | "dark" | "light";
 
@@ -42,8 +43,13 @@ export interface ConfiguredStremioAddon {
 }
 
 export interface MetadataProviderSettings {
+  preferredMetadataProviderId: string;
+  metadataFallbackOrder: string[];
+  allowAddonMetadataFallback: boolean;
+  allowMetadataEnrichment: boolean;
   primaryProvider: string;
   language: string;
+  tmdb: TmdbConfig;
 }
 
 export interface AppSettings {
@@ -66,8 +72,16 @@ export const DEFAULT_SETTINGS: AppSettings = {
     shareCrashReports: false,
   },
   metadata: {
+    preferredMetadataProviderId: "mock.metadata",
+    metadataFallbackOrder: ["mock.metadata"],
+    allowAddonMetadataFallback: true,
+    allowMetadataEnrichment: true,
     primaryProvider: "mock.metadata",
     language: "en-US",
+    tmdb: {
+      enabled: false,
+      apiReadAccessToken: "",
+    },
   },
   debridProviders: [],
   stremioAddons: [],

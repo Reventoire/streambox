@@ -1,4 +1,5 @@
-import { RotateCcw, Plus } from "lucide-react";
+import { useState } from "react";
+import { RotateCcw, Plus, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import SettingsSection from "../components/settings/SettingsSection";
 import SettingsRow from "../components/settings/SettingsRow";
@@ -14,6 +15,9 @@ import {
 } from "../hooks/useProviderQueries";
 import { useSettingsStore } from "../stores/useSettingsStore";
 import type { ConfiguredStremioAddon } from "../types/settings";
+import { createTmdbConfig, hasTmdbToken, maskTmdbToken } from "../services/settings/tmdbCredentialService";
+import { validateTmdbToken } from "../services/metadata/tmdbService";
+import { TMDB_PROVIDER_ID } from "../services/providers/tmdbProvider";
 import "./SettingsPage.css";
 
 const THEME_OPTIONS: SelectOption[] = [
@@ -50,6 +54,7 @@ function renderMockProviderCard(summary: ProviderSummary) {
       configurationState={provider.config.configurationState}
       healthMessage={health.message}
       version={provider.manifest.version}
+      readOnlyLabel={provider.id === TMDB_PROVIDER_ID ? "Configured" : "Mock"}
       readOnly
     />
   );
@@ -57,7 +62,11 @@ function renderMockProviderCard(summary: ProviderSummary) {
 
 export default function SettingsPage() {
   const { settings, updateSettings, resetSettings, isLoading } = useSettingsStore();
-  const { data: providerSummaries } = useProviderSummaries(settings.stremioAddons);
+  const { data: providerSummaries } = useProviderSummaries(settings.stremioAddons, settings.metadata);
+  const [tmdbTokenInput, setTmdbTokenInput] = useState("");
+  const [isTestingTmdb, setIsTestingTmdb] = useState(false);
+  const [tmdbTestMessage, setTmdbTestMessage] = useState<string | null>(null);
+  const [tmdbTestOk, setTmdbTestOk] = useState<boolean | null>(null);
 
   const metadataProviderCards = [
     ...getProviderSummariesByType(providerSummaries, "metadata"),
@@ -66,10 +75,68 @@ export default function SettingsPage() {
   const streamProviderCards = getProviderSummariesByType(providerSummaries, "stream");
   const stremioProviderCards = getProviderSummariesByType(providerSummaries, "stremio-addon");
   const debridProviderCards = getProviderSummariesByType(providerSummaries, "debrid");
+  const tmdbSummary = metadataProviderCards.find((summary) => summary.provider.id === TMDB_PROVIDER_ID);
+  const addonMetadataAvailable = settings.stremioAddons.some((addon) =>
+    addon.capabilities?.includes("metadata") ||
+    addon.resources?.some((resource) => resource.name === "meta"),
+  );
+  const metadataProviderOptions: SelectOption[] = [
+    ...METADATA_PROVIDER_OPTIONS,
+    ...(hasTmdbToken(settings.metadata.tmdb)
+      ? [{ value: TMDB_PROVIDER_ID, label: "TMDB Metadata" }]
+      : []),
+    ...(addonMetadataAvailable
+      ? [{ value: "stremio.addon.metadata", label: "Stremio Addon Metadata" }]
+      : []),
+  ];
 
   const handleSaveStremioAddon = (addon: ConfiguredStremioAddon) => {
     const existingAddons = settings.stremioAddons.filter((item) => item.id !== addon.id);
     void updateSettings({ stremioAddons: [...existingAddons, addon] });
+  };
+
+  const updateMetadataSettings = (metadataPatch: Partial<typeof settings.metadata>) => {
+    void updateSettings({
+      metadata: {
+        ...settings.metadata,
+        ...metadataPatch,
+      },
+    });
+  };
+
+  const handleSaveTmdbToken = () => {
+    const nextConfig = createTmdbConfig(tmdbTokenInput, true);
+    const fallbackOrder = Array.from(
+      new Set([TMDB_PROVIDER_ID, ...settings.metadata.metadataFallbackOrder, "mock.metadata"]),
+    );
+
+    setTmdbTokenInput("");
+    setTmdbTestMessage("TMDB token saved locally.");
+    setTmdbTestOk(true);
+    updateMetadataSettings({
+      tmdb: nextConfig,
+      preferredMetadataProviderId: TMDB_PROVIDER_ID,
+      primaryProvider: TMDB_PROVIDER_ID,
+      metadataFallbackOrder: fallbackOrder,
+    });
+  };
+
+  const handleTestTmdbConnection = async () => {
+    const tokenToTest = tmdbTokenInput.trim() || settings.metadata.tmdb.apiReadAccessToken || "";
+    setIsTestingTmdb(true);
+    setTmdbTestMessage(null);
+    setTmdbTestOk(null);
+
+    try {
+      const isValid = await validateTmdbToken(tokenToTest);
+      setTmdbTestOk(isValid);
+      setTmdbTestMessage(isValid ? "TMDB connection is healthy." : "TMDB token is missing.");
+    } catch {
+      setTmdbTestOk(false);
+      setTmdbTestMessage("TMDB connection test failed.");
+    } finally {
+      setIsTestingTmdb(false);
+    }
   };
 
   const renderStremioProviderCard = (summary: ProviderSummary) => {
@@ -226,23 +293,119 @@ export default function SettingsPage() {
       {/* Metadata Providers */}
       <SettingsSection
         title="Metadata and Catalog Providers"
-        description="Configure provider-neutral metadata and catalog sources. Mock providers are local-only."
+        description="Configure provider-neutral metadata and catalog sources. TMDB is used only for metadata and discovery."
       >
         <SettingsRow
-          label="Primary Metadata Provider"
-          description="Used to fetch movie and series information."
+          label="Preferred Metadata Provider"
+          description="Used first for search, details, trending, and popular metadata."
           control={
             <Select
-              value={settings.metadata.primaryProvider}
-              options={METADATA_PROVIDER_OPTIONS}
-              onChange={(primaryProvider) =>
-                updateSettings({ metadata: { ...settings.metadata, primaryProvider } })
+              value={settings.metadata.preferredMetadataProviderId}
+              options={metadataProviderOptions}
+              onChange={(preferredMetadataProviderId) =>
+                updateMetadataSettings({
+                  preferredMetadataProviderId,
+                  primaryProvider: preferredMetadataProviderId,
+                  metadataFallbackOrder: Array.from(
+                    new Set([preferredMetadataProviderId, "mock.metadata"]),
+                  ),
+                })
               }
             />
           }
         />
+        <SettingsRow
+          label="Allow Metadata Enrichment"
+          description="Allow canonical metadata providers to enrich provider previews when IDs can be mapped reliably."
+          control={
+            <Toggle
+              checked={settings.metadata.allowMetadataEnrichment}
+              onChange={(allowMetadataEnrichment) =>
+                updateMetadataSettings({ allowMetadataEnrichment })
+              }
+            />
+          }
+        />
+        <SettingsRow
+          label="Allow Addon Metadata Fallback"
+          description="Allow saved addon metadata as a fallback later. Addon stream discovery remains separate."
+          control={
+            <Toggle
+              checked={settings.metadata.allowAddonMetadataFallback}
+              onChange={(allowAddonMetadataFallback) =>
+                updateMetadataSettings({ allowAddonMetadataFallback })
+              }
+            />
+          }
+        />
+        <div className="tmdb-settings-panel">
+          <div className="tmdb-settings-header">
+            <div>
+              <h3>TMDB Metadata</h3>
+              <p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+            </div>
+            {hasTmdbToken(settings.metadata.tmdb) && (
+              <span>{maskTmdbToken(settings.metadata.tmdb.apiReadAccessToken)}</span>
+            )}
+          </div>
+          <div className="tmdb-token-row">
+            <input
+              type="password"
+              value={tmdbTokenInput}
+              onChange={(event) => setTmdbTokenInput(event.target.value)}
+              placeholder={hasTmdbToken(settings.metadata.tmdb) ? "Enter a new TMDB token to replace saved token" : "TMDB API Read Access Token"}
+              autoComplete="off"
+            />
+            <button
+              className="manifest-action-btn"
+              disabled={!tmdbTokenInput.trim()}
+              onClick={handleSaveTmdbToken}
+            >
+              Save Token
+            </button>
+            <button
+              className="manifest-action-btn secondary"
+              disabled={isTestingTmdb || (!tmdbTokenInput.trim() && !hasTmdbToken(settings.metadata.tmdb))}
+              onClick={handleTestTmdbConnection}
+            >
+              {isTestingTmdb && <Loader2 size={16} className="spin-icon" />}
+              Test TMDB Connection
+            </button>
+          </div>
+          {tmdbTestMessage && (
+            <p className={`tmdb-test-message ${tmdbTestOk ? "ok" : "error"}`}>
+              {tmdbTestMessage}
+            </p>
+          )}
+          <p className="settings-empty-hint">
+            Future metadata providers planned: TheTVDB, OMDb, and Fanart.tv.
+          </p>
+        </div>
         <div className="settings-provider-list">
           {metadataProviderCards.map(renderMockProviderCard)}
+          {!tmdbSummary && (
+            <ProviderCard
+              name="TMDB Metadata"
+              description="Search, details, images, external IDs, trending, and popular metadata through a user-provided token."
+              enabled={false}
+              typeLabel="metadata"
+              status="disabled"
+              capabilities={[
+                "metadata.search",
+                "metadata.movie-details",
+                "metadata.series-details",
+                "metadata.images",
+                "metadata.external-ids",
+                "metadata.trending",
+                "metadata.popular",
+              ]}
+              configurationState="not-configured"
+              healthMessage="Add a TMDB API Read Access Token to enable this provider."
+              version="v3"
+              readOnlyLabel="Not configured"
+              readOnly
+            />
+          )}
         </div>
       </SettingsSection>
 

@@ -8,6 +8,11 @@ import {
   useContinueWatching, 
   useRecentlyAdded 
 } from "../hooks/useMediaQueries";
+import {
+  useIsTmdbPreferred,
+  usePreferredPopular,
+  usePreferredTrending,
+} from "../hooks/useMetadataProviderQueries";
 import { useNavigate } from "react-router-dom";
 import "./HomePage.css";
 
@@ -17,6 +22,10 @@ export default function HomePage() {
   const { data: popularSeries, isLoading: loadingPopular } = usePopularSeries();
   const { data: continueWatching, isLoading: loadingContinue } = useContinueWatching();
   const { data: recentlyAdded, isLoading: loadingRecent } = useRecentlyAdded();
+  const isTmdbPreferred = useIsTmdbPreferred();
+  const { data: tmdbTrending } = usePreferredTrending("multi", "week");
+  const { data: tmdbPopularMovies } = usePreferredPopular("movie");
+  const { data: tmdbPopularSeries } = usePreferredPopular("series");
 
   const heroItem = trendingMovies?.[0];
 
@@ -67,6 +76,30 @@ export default function HomePage() {
       )}
 
       <div className="home-rows-container">
+        {isTmdbPreferred && tmdbTrending && tmdbTrending.length > 0 && (
+          <MediaRow title="TMDB Trending">
+            {tmdbTrending.map(item => (
+              <MediaCard key={item.id} item={item} />
+            ))}
+          </MediaRow>
+        )}
+
+        {isTmdbPreferred && tmdbPopularMovies && tmdbPopularMovies.length > 0 && (
+          <MediaRow title="TMDB Popular Movies">
+            {tmdbPopularMovies.map(item => (
+              <MediaCard key={item.id} item={item} />
+            ))}
+          </MediaRow>
+        )}
+
+        {isTmdbPreferred && tmdbPopularSeries && tmdbPopularSeries.length > 0 && (
+          <MediaRow title="TMDB Popular Series">
+            {tmdbPopularSeries.map(item => (
+              <MediaCard key={item.id} item={item} />
+            ))}
+          </MediaRow>
+        )}
+
         {continueWatching && continueWatching.length > 0 && (
           <MediaRow title="Continue Watching">
             {continueWatching.map(item => (

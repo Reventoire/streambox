@@ -73,6 +73,8 @@ This document tracks the status of all planned features.
 | Settings provider cards | Partial | Mock cards show type, status, capabilities, and placeholder config state |
 | Stremio addon manifest support | Partial | URL validation, manifest fetch, preview, local save, provider registration |
 | Stremio catalog support | Partial | Saved addon catalog listing, URL construction, response validation, normalized MediaGrid browsing |
+| Metadata provider preference | Partial | Preferred provider, fallback order, addon fallback, and enrichment settings |
+| TMDB metadata provider | Partial | User token, connection test, search, details, trending, popular, images, external IDs |
 | Real provider credentials | Planned | Not accepted or stored yet |
 
 ---
@@ -85,6 +87,10 @@ This document tracks the status of all planned features.
 | Stremio catalog browsing | Partial | Catalog fetching from saved addons only; normalized preview results |
 | Stremio metadata support | Planned | |
 | Stremio stream fetching | Planned | |
+| TMDB provider | Partial | Metadata and discovery only; no streams or playback URLs |
+| TheTVDB provider | Planned | |
+| OMDb provider | Planned | |
+| Fanart.tv provider | Planned | |
 | Real-Debrid integration | Planned | |
 | AllDebrid integration | Planned | |
 | Torrent stream discovery | Planned | |

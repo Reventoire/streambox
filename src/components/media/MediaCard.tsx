@@ -11,7 +11,11 @@ export default function MediaCard({ item }: MediaCardProps) {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/media/${item.type}/${item.id}`);
+    navigate(`/media/${item.type}/${item.id}`, {
+      state: {
+        mediaPreview: item,
+      },
+    });
   };
 
   return (

@@ -32,6 +32,8 @@ export interface MetadataProvider extends BaseProvider {
   readonly type: "metadata";
   searchMedia(query: string, options?: ProviderSearchOptions): Promise<MediaItem[]>;
   getMediaDetails(type: MediaType, id: string): Promise<MediaDetails>;
+  getTrending?(type: MediaType | "multi", timeWindow: "day" | "week"): Promise<MediaItem[]>;
+  getPopular?(type: MediaType): Promise<MediaItem[]>;
 }
 
 export interface CatalogProvider extends BaseProvider {

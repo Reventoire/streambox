@@ -82,7 +82,13 @@ export class MockMetadataProvider extends MockBaseProvider implements MetadataPr
   readonly type = "metadata";
 
   constructor() {
-    const capabilities: ProviderCapability[] = ["metadata.search", "metadata.details"];
+    const capabilities: ProviderCapability[] = [
+      "metadata.search",
+      "metadata.details",
+      "metadata.movie-details",
+      "metadata.series-details",
+      "metadata.images",
+    ];
     super(
       "mock.metadata",
       createManifest(

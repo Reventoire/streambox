@@ -1,0 +1,221 @@
+.player-page {
+  position: relative;
+  min-height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-base);
+}
+
+.player-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.player-backdrop img,
+.player-backdrop-placeholder {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-backdrop-placeholder {
+  background: linear-gradient(135deg, var(--bg-surface), var(--bg-surface-active));
+}
+
+.player-backdrop-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(10, 10, 12, 0.65), var(--bg-base)),
+    linear-gradient(90deg, var(--bg-base), rgba(10, 10, 12, 0.3));
+}
+
+.player-shell {
+  position: relative;
+  z-index: 1;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 32px 40px;
+}
+
+.player-back-btn,
+.player-primary-btn,
+.player-secondary-btn,
+.player-main-btn,
+.player-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.player-back-btn {
+  align-self: flex-start;
+  padding: 0 14px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.player-stage {
+  display: grid;
+  grid-template-columns: minmax(160px, 240px) minmax(0, 1fr);
+  align-items: center;
+  gap: 28px;
+  max-width: 920px;
+  margin: auto 0;
+}
+
+.player-poster-frame {
+  aspect-ratio: 2 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid var(--border-highlight);
+  background-color: var(--bg-surface);
+  color: var(--text-muted);
+  box-shadow: var(--shadow-lg);
+}
+
+.player-poster-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.player-placeholder-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.player-placeholder-copy span {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: var(--accent-primary-hover);
+  background-color: rgba(99, 102, 241, 0.14);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.player-placeholder-copy h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  line-height: 1.12;
+}
+
+.player-placeholder-copy p {
+  margin: 0;
+  max-width: 620px;
+  color: var(--text-secondary);
+}
+
+.player-error {
+  color: #f87171 !important;
+}
+
+.player-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 8px;
+}
+
+.player-progress-row,
+.player-control-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.player-progress-row span {
+  width: 54px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+}
+
+.player-progress-row input,
+.player-range-control input {
+  accent-color: var(--accent-primary);
+}
+
+.player-progress-row input {
+  flex: 1;
+}
+
+.player-main-btn,
+.player-primary-btn {
+  padding: 0 18px;
+  background-color: var(--accent-primary);
+  color: #fff;
+}
+
+.player-secondary-btn,
+.player-icon-btn {
+  padding: 0 12px;
+  background-color: var(--bg-surface-active);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.player-range-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+}
+
+.player-speed-select {
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface-active);
+  color: var(--text-primary);
+}
+
+.player-empty-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.player-empty-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+@media (max-width: 760px) {
+  .player-shell {
+    padding: 24px;
+  }
+
+  .player-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .player-poster-frame {
+    width: min(220px, 70vw);
+  }
+
+  .player-control-row {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .player-placeholder-copy h1 {
+    font-size: 2rem;
+  }
+}

@@ -14,6 +14,7 @@ interface ProviderCardProps {
   healthMessage?: string;
   version?: string;
   readOnly?: boolean;
+  readOnlyLabel?: string;
   onToggle?: (enabled: boolean) => void;
   onConfigure?: () => void;
   onRemove?: () => void;
@@ -37,6 +38,7 @@ export default function ProviderCard({
   healthMessage,
   version,
   readOnly = false,
+  readOnlyLabel = "Mock",
   onToggle,
   onConfigure,
   onRemove,
@@ -60,7 +62,7 @@ export default function ProviderCard({
         {onToggle && !readOnly ? (
           <Toggle checked={enabled} onChange={onToggle} />
         ) : (
-          <span className="provider-readonly-label">Mock</span>
+          <span className="provider-readonly-label">{readOnlyLabel}</span>
         )}
       </div>
 

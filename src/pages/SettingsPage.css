@@ -40,6 +40,73 @@
   gap: 12px;
 }
 
+.tmdb-settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+}
+
+.tmdb-settings-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.tmdb-settings-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.tmdb-settings-header p,
+.tmdb-test-message {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.tmdb-settings-header span {
+  flex: 0 0 auto;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.tmdb-token-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+}
+
+.tmdb-token-row input {
+  min-height: 44px;
+  min-width: 0;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface-active);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.manifest-action-btn.secondary {
+  background-color: var(--bg-surface-active);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.tmdb-test-message.ok {
+  color: #22c55e;
+}
+
+.tmdb-test-message.error {
+  color: #f87171;
+}
+
 .settings-addon-catalog-preview {
   display: flex;
   flex-direction: column;
@@ -313,12 +380,14 @@
 
 @media (max-width: 680px) {
   .stremio-manifest-input-row,
-  .manifest-preview-grid {
+  .manifest-preview-grid,
+  .tmdb-token-row {
     grid-template-columns: 1fr;
   }
 
   .settings-addon-catalog-preview-header,
-  .settings-addon-catalog-item > div:first-child {
+  .settings-addon-catalog-item > div:first-child,
+  .tmdb-settings-header {
     align-items: flex-start;
     flex-direction: column;
   }

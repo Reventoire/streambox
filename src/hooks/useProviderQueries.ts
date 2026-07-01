@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import type { ProviderHealth, ProviderType } from "../types/providers";
-import type { ConfiguredStremioAddon } from "../types/settings";
+import type { ConfiguredStremioAddon, MetadataProviderSettings } from "../types/settings";
 import { registerConfiguredStremioAddonProviders } from "../services/providers/configuredStremioAddonProvider";
 import type { AnyProvider } from "../services/providers/providerInterfaces";
 import { registerMockProviders } from "../services/providers/mockProviders";
 import { listProviders, listProvidersByType } from "../services/providers/providerRegistry";
+import { registerTmdbProvider } from "../services/providers/tmdbProvider";
 
 registerMockProviders();
 
@@ -27,12 +28,28 @@ export const providerKeys = {
         version: addon.version,
       })),
     ] as const,
+  summariesWithMetadata: (
+    addons: ConfiguredStremioAddon[],
+    metadata: MetadataProviderSettings,
+  ) =>
+    [
+      ...providerKeys.summaries(addons),
+      {
+        preferredMetadataProviderId: metadata.preferredMetadataProviderId,
+        tmdbConfigured: Boolean(metadata.tmdb.apiReadAccessToken),
+        tmdbEnabled: metadata.tmdb.enabled,
+      },
+    ] as const,
 };
 
 async function getProviderSummaries(
   configuredStremioAddons: ConfiguredStremioAddon[],
+  metadataSettings?: MetadataProviderSettings,
 ): Promise<ProviderSummary[]> {
   registerConfiguredStremioAddonProviders(configuredStremioAddons);
+  if (metadataSettings) {
+    registerTmdbProvider(metadataSettings);
+  }
   const providers = listProviders();
   const summaries = await Promise.all(
     providers.map(async (provider) => ({
@@ -44,10 +61,15 @@ async function getProviderSummaries(
   return summaries.sort((a, b) => a.provider.manifest.name.localeCompare(b.provider.manifest.name));
 }
 
-export function useProviderSummaries(configuredStremioAddons: ConfiguredStremioAddon[] = []) {
+export function useProviderSummaries(
+  configuredStremioAddons: ConfiguredStremioAddon[] = [],
+  metadataSettings?: MetadataProviderSettings,
+) {
   return useQuery({
-    queryKey: providerKeys.summaries(configuredStremioAddons),
-    queryFn: () => getProviderSummaries(configuredStremioAddons),
+    queryKey: metadataSettings
+      ? providerKeys.summariesWithMetadata(configuredStremioAddons, metadataSettings)
+      : providerKeys.summaries(configuredStremioAddons),
+    queryFn: () => getProviderSummaries(configuredStremioAddons, metadataSettings),
     staleTime: 30_000,
   });
 }

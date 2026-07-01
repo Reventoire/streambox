@@ -294,6 +294,28 @@ UI should depend on generic provider behavior, not specific provider names.
 
 ---
 
+## Metadata Provider Preferences
+
+Metadata providers are selected through user preferences, not hardcoded UI
+assumptions. The preferred provider is tried first for search, details,
+trending, popular, images, and external IDs. A configured fallback order keeps
+mock metadata available during development and allows later providers such as
+TheTVDB, OMDb, and Fanart.tv to be added without changing page components.
+
+TMDB is a metadata and discovery provider only. It must not be used for stream
+fetching, torrent discovery, Debrid resolution, scraping, or playback URLs.
+TMDB API Read Access Tokens are user-provided settings and are currently stored
+with local settings behind a credential service boundary; this should move to
+Tauri secure storage before production use.
+
+Provider responses must be normalized into Streambox `MediaItem` and
+`MediaDetails` types before reaching React UI. TMDB IDs, Stremio IDs, IMDb IDs,
+and TVDB IDs remain distinct. `imdb_id` can be used as a bridge when returned by
+a trusted provider response, but Stremio IDs must not be assumed to be mappable
+just because they can look IMDb-like.
+
+---
+
 ## Data Model Principles
 
 Use shared TypeScript types for frontend-facing data.

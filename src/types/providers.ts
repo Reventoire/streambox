@@ -20,6 +20,12 @@ export type ProviderStatus =
 export type ProviderCapability =
   | "metadata.search"
   | "metadata.details"
+  | "metadata.movie-details"
+  | "metadata.series-details"
+  | "metadata.images"
+  | "metadata.external-ids"
+  | "metadata.trending"
+  | "metadata.popular"
   | "catalog.trending"
   | "catalog.popular"
   | "catalog.recent"
