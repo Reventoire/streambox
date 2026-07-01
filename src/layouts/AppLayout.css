@@ -3,6 +3,7 @@
   height: 100vh;
   width: 100vw;
   background-color: var(--bg-base);
+  transition: background-color 0.3s ease;
 }
 
 .main-area {
@@ -18,4 +19,23 @@
   overflow-y: auto;
   position: relative;
   background-color: var(--bg-base);
+  scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar for premium feel */
+.content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: var(--border-highlight);
+  border-radius: 4px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
